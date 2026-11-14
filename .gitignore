@@ -1,0 +1,7 @@
+tools/build/
+tools/__pycache__/
+__pycache__/
+*.pyc
+Thumbs.db
+.DS_Store
+Screenshot *.png

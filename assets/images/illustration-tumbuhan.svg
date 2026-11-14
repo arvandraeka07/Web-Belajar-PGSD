@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-label="Ilustrasi dunia tumbuhan">
+  <defs>
+    <linearGradient id="plantBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e8fbf1"/>
+      <stop offset="1" stop-color="#cdf5e0"/>
+    </linearGradient>
+    <linearGradient id="potGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffb45e"/>
+      <stop offset="1" stop-color="#e27712"/>
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5ee3a5"/>
+      <stop offset="1" stop-color="#159a58"/>
+    </linearGradient>
+    <linearGradient id="canGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6bb0ff"/>
+      <stop offset="1" stop-color="#2f7bf6"/>
+    </linearGradient>
+    <radialGradient id="sunGrad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff2a8"/>
+      <stop offset="1" stop-color="#ffd23f"/>
+    </radialGradient>
+    <filter id="plantShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="9" stdDeviation="10" flood-color="#147a4a" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="320" cy="218" rx="272" ry="160" fill="url(#plantBg)" opacity="0.92"/>
+  <circle cx="520" cy="110" r="58" fill="#ffffff" opacity="0.45"/>
+
+  <!-- Matahari -->
+  <g>
+    <g stroke="#ffc400" stroke-width="6" stroke-linecap="round">
+      <path d="M112 38v-20M112 196v-20M34 112H14M210 112h-20M57 57 43 43M181 181l-14-14M167 57l14-14"/>
+    </g>
+    <circle cx="112" cy="112" r="45" fill="url(#sunGrad)" stroke="#e2a800" stroke-width="4"/>
+    <circle cx="112" cy="112" r="32" fill="#fff4b8" opacity="0.55"/>
+  </g>
+
+  <!-- Rumput -->
+  <g fill="none" stroke="#5fc78d" stroke-width="5" stroke-linecap="round">
+    <path d="M70 366c-6-18-3-34 8-46M94 366c8-14 19-22 34-25M540 366c-6-18-3-34 8-46M566 366c8-14 19-22 34-25"/>
+  </g>
+
+  <!-- Tanaman -->
+  <g filter="url(#plantShadow)">
+    <path d="M320 286V166" stroke="#1d8a52" stroke-width="9" stroke-linecap="round"/>
+    <path d="M320 234c-30-4-52-20-60-46 28-2 51 12 60 46z" fill="url(#leafGrad)" stroke="#107244" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M320 208c30-4 52-20 60-46-28-2-51 12-60 46z" fill="url(#leafGrad)" stroke="#107244" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M320 266c-25 0-45-10-58-30 24-6 46 4 58 30z" fill="url(#leafGrad)" stroke="#107244" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M320 248c25 0 45-10 58-30-24-6-46 4-58 30z" fill="url(#leafGrad)" stroke="#107244" stroke-width="3.5" stroke-linejoin="round"/>
+
+    <!-- Bunga -->
+    <g>
+      <path d="M320 168c-14-4-22-16-18-30 14-3 26 6 28 20 8-12 23-16 35-8 2 14-9 25-23 26 13 6 19 19 14 32-14 4-26-5-29-19-6 13-20 19-33 12-2-14 8-26 22-29z" fill="#ff7eb3" stroke="#d64f8a" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="320" cy="160" r="15" fill="#ffd23f" stroke="#e2a800" stroke-width="3"/>
+      <circle cx="315" cy="156" r="2.5" fill="#b07c00"/>
+      <circle cx="325" cy="156" r="2.5" fill="#b07c00"/>
+      <circle cx="320" cy="164" r="2.5" fill="#b07c00"/>
+    </g>
+
+    <!-- Pot -->
+    <ellipse cx="320" cy="366" rx="72" ry="9" fill="#0f6b40" opacity="0.16"/>
+    <path d="M254 292h132l-18 72c-1 6-6 9-12 9h-72c-6 0-11-3-12-9z" fill="url(#potGrad)" stroke="#b9600a" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="242" y="270" width="156" height="30" rx="13" fill="#ffb45e" stroke="#b9600a" stroke-width="4"/>
+    <ellipse cx="320" cy="286" rx="66" ry="10" fill="#7a4a24"/>
+    <path d="M296 316c12-6 24-6 36 0M300 338c10-5 20-5 30 0" fill="none" stroke="#ffd7a1" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+  </g>
+
+  <!-- Penyiram -->
+  <g transform="rotate(-8 500 240)" filter="url(#plantShadow)">
+    <rect x="458" y="206" width="82" height="76" rx="18" fill="url(#canGrad)" stroke="#1a56c4" stroke-width="4"/>
+    <path d="M458 222h-34l-16 20 16 20h34z" fill="#6bb0ff" stroke="#1a56c4" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M408 242c-8 0-14 6-14 14" fill="none" stroke="#1a56c4" stroke-width="4" stroke-linecap="round"/>
+    <path d="M540 232c20-2 32 12 30 28-2 14-14 24-30 22" fill="none" stroke="#1a56c4" stroke-width="7" stroke-linecap="round"/>
+    <rect x="472" y="232" width="54" height="8" rx="4" fill="#ffffff" opacity="0.45"/>
+    <g fill="#8fd0ff" stroke="#2f7bf6" stroke-width="2">
+      <path d="M412 264c-5 9-4 15 2 17 6 2 10-2 8-8-1-4-5-8-10-9z"/>
+      <path d="M394 282c-5 9-4 15 2 17 6 2 10-2 8-8-1-4-5-8-10-9z" opacity="0.8"/>
+      <path d="M426 288c-4 7-3 12 2 14 5 2 8-2 6-7-1-3-4-6-8-7z" opacity="0.7"/>
+    </g>
+  </g>
+
+  <!-- Kupu-kupu -->
+  <g transform="rotate(-12 200 180)">
+    <path d="M200 188c-18-26-38-32-50-20-12 12 0 32 22 38-20 8-28 28-14 38 14 10 32-2 42-28z" fill="#8b5cf6" stroke="#6533d8" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M204 188c18-26 38-32 50-20 12 12 0 32-22 38 20 8 28 28 14 38-14 10-32-2-42-28z" fill="#a77dff" stroke="#6533d8" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="202" cy="200" rx="5" ry="18" fill="#4b2d9e"/>
+    <path d="M198 182c-4-8-2-14 4-18M206 182c4-8 2-14-4-18" fill="none" stroke="#4b2d9e" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="180" cy="178" r="5" fill="#ffffff" opacity="0.7"/>
+    <circle cx="224" cy="178" r="5" fill="#ffffff" opacity="0.7"/>
+  </g>
+
+  <!-- Bintang & bunga kecil -->
+  <g fill="#ffd23f">
+    <path d="m566 316 3.4 7 7.7 1.1-5.6 5.4 1.4 7.6-6.9-3.6-6.9 3.6 1.4-7.6-5.6-5.4 7.7-1.1z" stroke="#e2a800" stroke-width="2"/>
+    <circle cx="470" cy="120" r="4"/>
+    <circle cx="612" cy="206" r="4"/>
+  </g>
+  <g>
+    <circle cx="160" cy="320" r="9" fill="#ff7eb3"/><circle cx="146" cy="316" r="7" fill="#ff9fc6"/><circle cx="174" cy="316" r="7" fill="#ff9fc6"/><circle cx="160" cy="334" r="7" fill="#ff9fc6"/>
+    <circle cx="160" cy="320" r="4" fill="#ffd23f"/>
+    <circle cx="470" cy="330" r="7" fill="#ffd23f"/><circle cx="462" cy="326" r="5" fill="#ffe68a"/><circle cx="478" cy="326" r="5" fill="#ffe68a"/>
+  </g>
+</svg>
