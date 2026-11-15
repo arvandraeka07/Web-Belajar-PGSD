@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Fun Learning Adventure — media pembelajaran interaktif Mengenal Huruf untuk siswa sekolah dasar. Video, materi, game petualangan, dan evaluasi.">
+  <meta name="description" content="Huruforia — media belajar interaktif mengenal huruf untuk anak. Video, materi, game petualangan, dan evaluasi.">
   <meta name="theme-color" content="#433a9b">
-  <title>Mengenal Huruf — Fun Learning Adventure</title>
+  <title>Huruforia — Belajar Mengenal Huruf</title>
   <link rel="icon" type="image/svg+xml" href="assets/images/logo.svg">
   <link rel="preload" href="assets/fonts/Baloo2-800.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="assets/fonts/Nunito-600.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/video.css">
+  <link rel="stylesheet" href="css/delight.css">
 </head>
 <body>
 
@@ -61,11 +62,11 @@
 
   <header class="app-header">
     <div class="header-inner">
-      <a class="brand" href="#/beranda" data-route="beranda" aria-label="Fun Learning Adventure — ke beranda">
+      <a class="brand" href="#/beranda" data-route="beranda" aria-label="Huruforia — ke beranda">
         <img class="brand__logo" src="assets/images/logo-uny.png" alt="" width="50" height="51">
         <span class="brand__text">
-          <span class="brand__top">Fun Learning</span>
-          <span class="brand__bottom">Adventure</span>
+          <span class="brand__top">Huruforia</span>
+          <span class="brand__bottom">Belajar Huruf</span>
         </span>
       </a>
 
@@ -123,7 +124,7 @@
               <span>Volume <strong id="volumeLabel">70%</strong></span>
               <input type="range" id="volumeRange" min="0" max="100" value="70" step="1">
             </label>
-            <p class="audio-note">Pengucapan huruf memakai suara gadis periang berbahasa Indonesia. Musik latar hanya aktif jika kamu menyalakannya.</p>
+            <p class="audio-note">Pengucapan huruf memakai suara Huruforia yang ramah dan ceria. Musik latar hanya aktif jika kamu menyalakannya.</p>
           </div>
         </div>
       </div>
@@ -132,7 +133,7 @@
 
   <main id="pageRoot" class="app-main" aria-live="polite" tabindex="-1">
     <noscript>
-      <div class="noscript">Aktifkan JavaScript di browser untuk memainkan Fun Learning Adventure.</div>
+      <div class="noscript">Aktifkan JavaScript di browser untuk memainkan Huruforia.</div>
     </noscript>
   </main>
 
@@ -141,8 +142,8 @@
       <div class="footer-brand">
         <img src="assets/images/logo-uny.png" alt="" width="38" height="38">
         <div>
-          <strong>Fun Learning Adventure</strong>
-          <p>Media pembelajaran interaktif Mengenal Huruf untuk siswa Sekolah Dasar.</p>
+          <strong>Huruforia</strong>
+          <p>Teman belajar mengenal huruf.</p>
         </div>
       </div>
       <nav class="footer-links" aria-label="Navigasi footer">
@@ -153,7 +154,7 @@
         <a href="#/progres">Perkembangan</a>
         <button type="button" data-about>Tentang &amp; Sumber Aset</button>
       </nav>
-      <p class="footer-copy">© <span id="currentYear">2026</span> Fun Learning Adventure · Dibuat untuk proyek akhir semester PGSD.</p>
+      <p class="footer-copy">© <span id="currentYear">2026</span> Huruforia · Belajar huruf jadi menyenangkan.</p>
     </div>
   </footer>
 
@@ -191,5 +192,6 @@
   <script src="js/games.js"></script>
   <script src="js/evaluation.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/delight.js"></script>
 </body>
 </html>

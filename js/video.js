@@ -149,7 +149,7 @@ FLA.pages.video = (function () {
               '<p class="side-hint">Ketuk kartu untuk mendengar bunyinya.</p>' +
               '<div class="kw-grid" id="vowelCards">' +
                 kw.vowels.map((v, i) =>
-                  '<button type="button" class="kw-card" data-vowel="' + i + '" aria-label="Huruf ' + v.letter + ', seperti pada ' + v.word + '">' +
+                  '<button type="button" class="kw-card" data-vowel="' + i + '" aria-label="Huruf ' + v.letter.toUpperCase() + ' untuk ' + v.word + '">' +
                     '<img src="' + v.img + '" alt="" width="56" height="56" loading="lazy">' +
                     '<span class="kw-card__letter">' + v.letter.toUpperCase() + v.letter + '</span>' +
                     '<span class="kw-card__word">' + v.word + '</span>' +
@@ -534,7 +534,7 @@ FLA.pages.video = (function () {
     ui.$$('[data-vowel]', root).forEach((btn) => {
       on(btn, 'click', () => {
         const v = kw.vowels[Number(btn.dataset.vowel)];
-        FLA.audio.say(v.letter, v.letter + ', seperti pada ' + v.word);
+        FLA.audio.say(v.letter, v.letter + ' untuk ' + v.word);
         btn.classList.remove('is-pop'); void btn.offsetWidth; btn.classList.add('is-pop');
       });
     });
@@ -595,8 +595,10 @@ FLA.pages.video = (function () {
     const cont = ui.$('#cpContinue', layer);
     cpView = FLA.quiz.render(ui.$('#cpSlot', layer), question, {
       retry: true,
-      autoSpeak: false,
-      speakFeedback: false,
+      autoSpeak: true,
+      autoSpeakDelay: 420,
+      introText: 'Sekarang, coba perhatikan pertanyaan berikut!',
+      outroText: 'Ayo, pilih jawaban yang benar!',
       onAnswer: (result) => {
         if (result.correct) {
           if (!state.solved) {
@@ -696,7 +698,8 @@ FLA.pages.video = (function () {
 
     setTimeout(() => {
       if (panel && !panel.hidden) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 160);
+      FLA.audio.speak('Waktu menonton sudah selesai. Sekarang, ayo jawab Kuis Kilat, ya!');
+    }, 420);
   }
 
   function showQuizFooter() {

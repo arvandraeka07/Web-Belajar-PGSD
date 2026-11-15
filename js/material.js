@@ -100,7 +100,7 @@ FLA.pages.material = (function () {
         '</div>' +
         '<div class="material-footnote">' +
           '<img src="assets/images/om-1F4A1.svg" alt="" width="42" height="42">' +
-          '<p><strong>Belajar pelan-pelan tidak apa-apa.</strong> Kerjakan latihan di setiap subbab untuk mengumpulkan poin, lalu selesaikan ringkasan untuk mendapat 2 bintang. Guru dapat mengarahkan materi secara berurutan.</p>' +
+          '<p><strong>Belajar pelan-pelan tidak apa-apa.</strong> Kerjakan latihan di setiap subbab untuk mengumpulkan poin, lalu selesaikan ringkasan untuk mendapat 3 bintang. Guru dapat mengarahkan materi secara berurutan.</p>' +
         '</div>' +
       '</div>';
 
@@ -234,23 +234,44 @@ FLA.pages.material = (function () {
     if (handler) handler(area, subbab);
   }
 
-  /* Pengenalan huruf: beberapa huruf contoh */
-  function kindText(area, subbab) {
-    area.innerHTML = '<div class="sample-row">' +
-      subbab.sample.map((ch) => {
-        const info = letterInfo(ch);
-        return '<button type="button" class="sample-tile" data-letter="' + ch + '" aria-label="Huruf ' + ch + ', dibaca ' + info.name + '">' +
-          '<strong>' + ch + '</strong><span>' + info.lower + '</span></button>';
-      }).join('') +
-      '<span class="sample-dots">...</span><button type="button" class="sample-tile sample-tile--end" data-letter="Z" aria-label="Huruf Z, dibaca zet">' +
-        '<strong>Z</strong><span>z</span></button></div>';
-    ui.$$('.sample-tile', area).forEach((tile) => {
+  /* Pengenalan huruf: alfabet lengkap A–Z, setiap huruf bisa didengar */
+  function kindText(area) {
+    area.innerHTML =
+      '<div class="alphabet-tools">' +
+        '<button type="button" class="btn btn--audio btn--sm" id="alphabetAll">' +
+          ui.icon('volume') + ' <span>Dengarkan A sampai Z</span>' +
+        '</button>' +
+        '<span class="alphabet-tools__hint">Ketuk satu huruf untuk mendengar namanya.</span>' +
+      '</div>' +
+      '<div class="alphabet-grid" role="group" aria-label="Alfabet A sampai Z">' +
+        data.ALPHABET.map((ch, index) => {
+          const info = letterInfo(ch);
+          return '<button type="button" class="alpha-tile alpha-tile--' + (index % 5) + '" data-letter="' + ch + '" ' +
+            'aria-label="Huruf ' + ch + ', dibaca ' + info.name + '">' +
+            '<span class="alpha-tile__sound">' + ui.icon('volume') + '</span>' +
+            '<strong>' + info.upper + '</strong>' +
+            '<span class="alpha-tile__lower">' + info.lower + '</span>' +
+            '<small>' + ui.escapeHtml(info.name) + '</small>' +
+          '</button>';
+        }).join('') +
+      '</div>';
+    ui.$$('.alpha-tile', area).forEach((tile) => {
       tile.addEventListener('click', () => {
         const info = letterInfo(tile.dataset.letter);
         FLA.audio.sfx('select');
         FLA.audio.say(info.lower, info.name);
+        tile.classList.remove('is-pop');
+        void tile.offsetWidth;
+        tile.classList.add('is-pop');
       });
     });
+    const all = ui.$('#alphabetAll', area);
+    if (all) {
+      all.addEventListener('click', () => {
+        FLA.audio.sfx('pop');
+        FLA.audio.speakSequence(data.letters.map((item) => item.name), { gap: 180 });
+      });
+    }
   }
 
   /* Kartu huruf besar dengan sorotan */
@@ -521,7 +542,7 @@ FLA.pages.material = (function () {
             '<div><span class="completion-card__kicker">Materi selesai</span>' +
             '<h3>Kamu hebat!</h3>' +
             '<p>Materi ini sudah selesai. Kamu bisa mempelajarinya lagi kapan saja.</p></div>' +
-            '<div class="completion-card__stars">' + ui.starRow(2, 3) + '</div>' +
+            '<div class="completion-card__stars">' + ui.starRow(3, 3) + '</div>' +
           '</div>'
         : allAnswered
           ? '<div class="finish-panel">' +
@@ -540,6 +561,7 @@ FLA.pages.material = (function () {
     if (back) {
       back.addEventListener('click', () => {
         FLA.audio.sfx('click');
+        FLA.audio.stopSpeech();
         stopNarration();
         renderList();
       });
@@ -550,6 +572,8 @@ FLA.pages.material = (function () {
       prev.addEventListener('click', () => {
         if (step > 0) {
           FLA.audio.sfx('click');
+          FLA.audio.stopSpeech();
+          stopNarration();
           step -= 1;
           renderReader();
           scrollToReader();
@@ -561,6 +585,7 @@ FLA.pages.material = (function () {
     if (next) {
       next.addEventListener('click', () => {
         FLA.audio.sfx('click');
+        FLA.audio.stopSpeech();
         stopNarration();
         step += 1;
         renderReader();
@@ -572,6 +597,7 @@ FLA.pages.material = (function () {
     if (finish) {
       finish.addEventListener('click', () => {
         FLA.audio.sfx('click');
+        FLA.audio.stopSpeech();
         stopNarration();
         renderList();
       });
@@ -589,8 +615,8 @@ FLA.pages.material = (function () {
         if (!result.already) {
           FLA.audio.sfx('win');
           ui.confetti(90);
-          FLA.audio.speak('Selamat! Kamu mendapat dua bintang!');
-          ui.toast('Materi selesai! +15 poin dan +2 bintang.', {
+          FLA.audio.speak('Selamat! Kamu mendapat tiga bintang!');
+          ui.toast('Materi selesai! +15 poin dan +3 bintang.', {
             tone: 'success', icon: 'star', title: 'Luar biasa!'
           });
         }

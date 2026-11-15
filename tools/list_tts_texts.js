@@ -41,27 +41,47 @@ syllables.forEach(add);
 /* Kartu kata di video */
 d.videos.forEach((video) => {
   const kw = video.keywords || {};
-  (kw.vowels || []).forEach((v) => add(v.letter + ', seperti pada ' + v.word));
+  (kw.vowels || []).forEach((v) => add(v.letter + ' untuk ' + v.word));
   (kw.syllables || []).forEach((s) => { add(s.parts[0] + '... ' + s.parts[1] + '... ' + s.word); });
 });
 
 /* Pujian dan umpan balik (js/quiz.js) */
-['Benar! Hebat!', 'Tepat sekali!', 'Pintar sekali!', 'Keren, jawabanmu benar!', 'Bagus sekali!',
-  'Belum tepat. Ayo coba lagi!', 'Hampir benar. Coba sekali lagi, ya!'].forEach(add);
+['Wah, hebat sekali! Jawaban kamu benar!', 'Tepat sekali!', 'Pintar sekali!', 'Keren, jawabanmu benar!', 'Bagus sekali!',
+  'Yuk, coba sekali lagi. Kamu pasti bisa!', 'Hampir benar. Coba sekali lagi, ya!'].forEach(add);
 
-/* "Jawaban yang benar adalah X." untuk semua kemungkinan pilihan jawaban */
-const answers = new Set();
-d.letters.forEach((l) => { answers.add(l.upper); answers.add(l.lower); });
-syllables.forEach((s) => answers.add(s));
-d.pictures.forEach((p) => answers.add(p.word));
-d.vowelWords.forEach((v) => answers.add(v.word));
-answers.forEach((a) => add('Belum tepat. Jawaban yang benar adalah ' + a + '.'));
+/* Pertanyaan yang dibacakan (js/quiz.js + tombol "Dengarkan pertanyaan") */
+[
+  'Dengarkan baik-baik. Huruf apakah yang kamu dengar?',
+  'Lihat gambar ini. Nama gambar ini diawali dengan huruf apa?',
+  'Perhatikan urutan huruf ini. Huruf apakah yang hilang?',
+  'Manakah huruf kapital, huruf besar?',
+  'Manakah yang termasuk huruf vokal?',
+  'Gabungkan huruf-huruf ini. Menjadi suku kata apa?',
+  'Dengarkan bunyinya. Suku kata apa yang kamu dengar?',
+  'Susun huruf-huruf ini menjadi nama gambar!',
+  'Sekarang, coba perhatikan pertanyaan berikut!',
+  'Ayo, pilih jawaban yang benar!',
+  'Ada sepuluh soal. Dengarkan pertanyaan dengan saksama, lalu pilih jawaban yang benar.',
+  'Ayo, kita mulai!',
+  'Waktu menonton sudah selesai. Sekarang, ayo jawab Kuis Kilat, ya!',
+  'Pasangkan A dengan a, B dengan b, dan seterusnya!',
+  'Pasangkan huruf kapital dengan huruf kecil yang sama. Hurufnya diacak!'
+].forEach(add);
+d.letters.forEach((l) => {
+  add('Manakah huruf kecil yang sama dengan huruf ' + l.upper + '?');
+  add('Manakah huruf kapital yang sama dengan huruf kecil ' + l.lower + '?');
+});
+d.materials.forEach((topic) => topic.subbabs.forEach((s) => { if (s.question) add(s.question.q); }));
+d.videos.forEach((video) => (video.checkpoints || []).forEach((cp) => add(cp.q)));
 
 /* Kalimat lain */
 add('Hebat! Semua pasangan sudah benar!');
-add('Selamat! Kamu mendapat dua bintang!');
+add('Selamat! Kamu mendapat tiga bintang!');
 add('Hebat! Kamu mendapat satu bintang!');
 add('Ayo coba lagi! Kamu pasti bisa.');
+add('Belum tepat. Ayo belajar lagi, ya!');
+add('Belum tepat. Coba huruf lain, ya!');
+add('Belum cocok. Coba pasangkan lagi, ya!');
 [1, 2, 3].forEach((n) => add('Selamat! Kamu mendapat ' + n + ' bintang!'));
 add(d.site.welcomeSpeech);
 d.site.welcome.forEach(add);                  /* sapaan Huhu di beranda */

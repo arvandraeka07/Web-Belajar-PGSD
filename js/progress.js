@@ -115,12 +115,12 @@ FLA.progress = (function () {
       record.completed = true;
       record.completedAt = new Date().toISOString();
       this.state.points += 15;
-      this.state.stars += 2;
-      this.addRecent({ type: 'materi', title, points: 15, stars: 2 });
+      this.state.stars += 3;
+      this.addRecent({ type: 'materi', title, points: 15, stars: 3 });
       this.save();
       this.refresh();
       this.checkBadges();
-      return { already: false, points: 15, stars: 2 };
+      return { already: false, points: 15, stars: 3 };
     }
 
     answeredSubbabCount() {
@@ -311,7 +311,7 @@ FLA.progress = (function () {
       const attempted = items.filter((item) => item.status !== 'new');
       const material = this.state.materials[category.material];
       const gameRecord = this.state.games[category.pos];
-      const materialStars = material && material.completed ? 2 : 0;
+      const materialStars = material && material.completed ? 3 : 0;
       const gameStars = gameRecord ? Math.min(3, gameRecord.stars || 0) : 0;
       const totalCorrect = items.reduce((sum, item) => sum + item.correct, 0);
       const totalWrong = items.reduce((sum, item) => sum + item.wrong, 0);
@@ -323,7 +323,7 @@ FLA.progress = (function () {
         practice: items.filter((item) => item.status === 'practice'),
         untouched: items.filter((item) => item.status === 'new'),
         stars: materialStars + gameStars,
-        maxStars: 5,
+        maxStars: 6,
         totalCorrect,
         totalWrong
       };

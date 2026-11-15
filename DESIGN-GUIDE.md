@@ -1,4 +1,4 @@
-# Pedoman Visual — Fun Learning Adventure
+# Pedoman Visual — Huruforia
 
 Website ini memakai **suasana dan warna yang terinspirasi dari Universitas Negeri Yogyakarta (UNY)**.
 Ini bukan website resmi UNY dan tidak mengklaim berafiliasi dengan UNY.

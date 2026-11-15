@@ -221,14 +221,18 @@ FLA.pages.game = (function () {
         '</div>' +
       '</div>';
 
+    const introAuto = later(() => FLA.audio.speak(pos.speech), 350);
     ui.$('#introBack', root).addEventListener('click', () => { FLA.audio.sfx('click'); renderMap(); });
-    ui.$('#introSpeak', root).addEventListener('click', () => FLA.audio.speak(pos.speech, { notify: true }));
+    ui.$('#introSpeak', root).addEventListener('click', () => {
+      clearTimeout(introAuto);
+      FLA.audio.speak(pos.speech, { notify: true });
+    });
     ui.$('#introStart', root).addEventListener('click', () => {
+      clearTimeout(introAuto);
       FLA.audio.sfx('click');
       FLA.audio.stopSpeech();
       startPos(pos);
     });
-    later(() => FLA.audio.speak(pos.speech), 350);
   }
 
   /* ============================================================
@@ -382,7 +386,10 @@ FLA.pages.game = (function () {
         '<div class="game-card question-enter">' +
           '<div class="game-card__label">Tantangan ' + (session.index + 1) + ' dari ' + session.total + '</div>' +
           '<div class="qa">' +
-            '<p class="qa__prompt">Susun huruf-huruf menjadi nama gambar ini!</p>' +
+            '<div class="qa__prompt-row">' +
+              '<button type="button" class="qa-listen" id="buildListen" aria-label="Dengarkan pertanyaan">' + ui.icon('volume') + '</button>' +
+              '<p class="qa__prompt">Susun huruf-huruf menjadi nama gambar ini!</p>' +
+            '</div>' +
             '<div class="qa__stem"><div class="qa-pic"><img src="' + word.file + '" alt="Gambar ' + word.word + '" width="120" height="120">' +
               '<button type="button" class="qa-pic__word" id="buildHear" aria-label="Dengarkan nama gambar">' + ui.icon('volume') + '<span>Dengarkan</span></button></div></div>' +
             '<div class="build-slots" id="buildSlots" aria-label="Tempat huruf">' + letters.map(() => '<span class="build-slot"></span>').join('') + '</div>' +
@@ -400,8 +407,17 @@ FLA.pages.game = (function () {
     const slots = ui.$$('.build-slot', root);
     const feedback = ui.$('#buildFeedback', root);
 
-    ui.$('#buildHear', root).addEventListener('click', () => FLA.audio.say(word.word.toLowerCase(), word.word));
-    later(() => FLA.audio.say(word.word.toLowerCase(), word.word), 300);
+    const buildPrompt = ['Susun huruf-huruf ini menjadi nama gambar!', word.word];
+    const buildAuto = later(() => FLA.audio.speakSequence(buildPrompt, { gap: 340 }), 380);
+    ui.$('#buildListen', root).addEventListener('click', () => {
+      clearTimeout(buildAuto);
+      FLA.audio.sfx('select');
+      FLA.audio.speakSequence(buildPrompt, { gap: 340 });
+    });
+    ui.$('#buildHear', root).addEventListener('click', () => {
+      clearTimeout(buildAuto);
+      FLA.audio.say(word.word.toLowerCase(), word.word);
+    });
 
     ui.$$('.build-tile', root).forEach((tile) => {
       tile.addEventListener('click', () => {
@@ -420,10 +436,11 @@ FLA.pages.game = (function () {
             FLA.progress.recordItem('suku', word.vowel, mistakes === 0);
             feedback.hidden = false;
             feedback.className = 'qa__feedback is-correct';
-            feedback.innerHTML = ui.icon('check') + ' <strong>' + ui.escapeHtml(FLA.quiz.praise()) + '</strong> Kata: ' + word.word + ' (' + word.syllables.join('-') + ').';
+            const praiseText = FLA.quiz.praise();
+            feedback.innerHTML = ui.icon('check') + ' <strong>' + ui.escapeHtml(praiseText) + '</strong> Kata: ' + word.word + ' (' + word.syllables.join('-') + ').';
             FLA.audio.sfx('correct');
             ui.burstFrom(slots[filled - 1]);
-            FLA.audio.say(word.word.toLowerCase(), word.word);
+            FLA.audio.speakSequence([praiseText, word.word], { gap: 260 });
             enableNext();
           }
         } else {
@@ -434,6 +451,7 @@ FLA.pages.game = (function () {
           feedback.hidden = false;
           feedback.className = 'qa__feedback is-wrong';
           feedback.innerHTML = ui.icon('close') + ' <strong>Belum tepat.</strong> Huruf berikutnya bukan ' + tile.dataset.letter + '. Coba huruf lain!';
+          FLA.audio.speak('Belum tepat. Coba huruf lain, ya!');
         }
       });
     });
@@ -443,17 +461,27 @@ FLA.pages.game = (function () {
   function renderBoard() {
     const letters = session.boards[session.index];
     const isLast = session.index === session.total - 1;
+    const promptText = session.index === 0
+      ? 'Pasangkan A dengan a, B dengan b, dan seterusnya!'
+      : 'Pasangkan huruf kapital dengan huruf kecil yang sama. Hurufnya diacak!';
     root.innerHTML =
       '<div class="page-shell game-play">' + hud() +
         '<div class="game-card question-enter">' +
           '<div class="game-card__label">Papan ' + (session.index + 1) + ' dari ' + session.total + '</div>' +
-          '<p class="qa__prompt">' + (session.index === 0
-            ? 'Pasangkan A dengan a, B dengan b, dan seterusnya!'
-            : 'Pasangkan huruf kapital dengan huruf kecil yang sama. Hurufnya diacak!') + '</p>' +
+          '<div class="qa__prompt-row">' +
+            '<button type="button" class="qa-listen" id="boardListen" aria-label="Dengarkan pertanyaan">' + ui.icon('volume') + '</button>' +
+            '<p class="qa__prompt">' + promptText + '</p>' +
+          '</div>' +
           '<div id="gameBoard"></div>' +
           nextControls(isLast) +
         '</div>' +
       '</div>';
+    const boardAuto = later(() => FLA.audio.speak(promptText), 360);
+    ui.$('#boardListen', root).addEventListener('click', () => {
+      clearTimeout(boardAuto);
+      FLA.audio.sfx('select');
+      FLA.audio.speak(promptText);
+    });
     activeView = FLA.quiz.matchBoard(ui.$('#gameBoard', root), letters, {
       onPair: (result) => {
         const key = result.letter + '-' + result.letter.toLowerCase();

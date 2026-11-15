@@ -1,11 +1,14 @@
 /* ============================================================
-   FUN LEARNING ADVENTURE — Pengelola Audio
+   HURUFORIA — Pengelola Audio
    - Musik latar dibuat dengan Web Audio API (tanpa file eksternal).
    - Efek suara disintesis langsung di browser.
    - Pengucapan huruf, suku kata, instruksi, dan umpan balik memakai
-     suara gadis periang dari assets/audio/tts/ (dibuat oleh
-     tools/generate_gtts_gadis.py). Kalimat yang belum punya berkas
-     otomatis memakai Web Speech API Bahasa Indonesia.
+     suara Huruforia dari assets/audio/tts/ (dibuat oleh
+     tools/generate_gtts_gadis.py dengan Edge TTS id-ID-GadisNeural).
+     Kalimat yang belum punya berkas memakai Web Speech API id-ID.
+   - speak(), say(), dan speakSequence() selalu menghentikan audio
+     sebelumnya agar tidak ada dua suara yang bertumpuk.
+   - stopSpeech() menghentikan MP3 dan suara browser sekaligus.
    - Tombol "Suara" mengaktifkan/menonaktifkan seluruh audio.
    - Audio hanya aktif setelah pengguna berinteraksi.
    ============================================================ */
@@ -57,6 +60,10 @@ FLA.AudioManager = (function () {
       this.speech = typeof window.speechSynthesis !== 'undefined' ? window.speechSynthesis : null;
       this.indonesianVoice = null;
       this.speaking = false;
+      this.sequenceToken = 0;
+      this.sequenceTimer = null;
+      this.speechFinish = null;
+      this.clipFinish = null;
       this.onStateChange = null;
       this.ttsFolder = 'assets/audio/tts/';
       /* manifest.js dimuat lebih dulu oleh index.html supaya klik pertama
@@ -80,14 +87,16 @@ FLA.AudioManager = (function () {
         .catch(() => { /* tanpa manifest: pakai suara browser */ });
     }
 
-    /* HARUS sama dengan normalize() di tools/generate_elevenlabs.py */
+    /* HARUS sama dengan normalize() di tools/generate_gtts_gadis.py */
     _norm(text) {
-      return String(text).toLowerCase().split(/\s+/).filter(Boolean).join(' ');
+      const value = String(text);
+      const normalized = typeof value.normalize === 'function' ? value.normalize('NFC') : value;
+      return normalized.toLowerCase().split(/\s+/).filter(Boolean).join(' ');
     }
 
-    /* Daftar kalimat yang belum punya audio ElevenLabs.
-       Di konsol browser: FLA.audio.exportMissing() lalu simpan sebagai .txt
-       dan jalankan: python tools/generate_elevenlabs.py --tambah berkas.txt */
+    /* Daftar kalimat yang belum punya audio.
+       Di konsol browser: FLA.audio.exportMissing(), lalu tambahkan kalimat itu
+       ke tools/list_tts_texts.js dan buat ulang audio. */
     exportMissing() {
       const list = Array.from(this.missingTexts);
       console.log(list.join('\n'));
@@ -95,7 +104,7 @@ FLA.AudioManager = (function () {
     }
 
     /* Cara baca Indonesia untuk suara cadangan browser ("be" jadi "bé").
-       Sejajar dengan pronounce() di tools/generate_elevenlabs.py. */
+       Sejajar dengan pronounce() di tools/generate_gtts_gadis.py. */
     _pronounce(text) {
       const letter = { a: 'a', b: 'bé', c: 'cé', d: 'dé', e: 'é', f: 'èf', g: 'gé', h: 'ha', i: 'i', j: 'jé',
         k: 'ka', l: 'èl', m: 'èm', n: 'èn', o: 'o', p: 'pé', q: 'ki', r: 'èr', s: 'ès', t: 'té', u: 'u',
@@ -119,16 +128,21 @@ FLA.AudioManager = (function () {
         if (Object.keys(this.manifest).length) this.missingTexts.add(String(text));
         return false;
       }
-      this.stopSpeech();
-      this.stopClip();
+      this._haltSpeech();
+      this._haltClip();
       const clip = new Audio(this.ttsFolder + file);
       clip.volume = Math.max(0, this.volume);
       this.clip = clip;
+      let done = false;
       const finish = () => {
+        if (done) return;
+        done = true;
         if (this.clip === clip) this.clip = null;
+        if (this.clipFinish === finish) this.clipFinish = null;
         this.speaking = false;
         if (opts.onEnd) opts.onEnd();
       };
+      this.clipFinish = finish;
       clip.addEventListener('playing', () => {
         this.speaking = true;
         if (opts.onStart) opts.onStart();
@@ -138,6 +152,7 @@ FLA.AudioManager = (function () {
         /* berkas hilang: hapus dari peta dan pakai suara browser */
         delete this.manifest[this._norm(text)];
         if (this.clip === clip) this.clip = null;
+        if (this.clipFinish === finish) this.clipFinish = null;
         this._speakBrowser(text, opts);
       }, { once: true });
       this.speaking = true;
@@ -330,7 +345,46 @@ FLA.AudioManager = (function () {
       if (FLA.ui) FLA.ui.toast(message, { tone: 'info', icon: 'volume-off', duration: 3200 });
     }
 
+    /* Berhenti total: batalkan urutan, hentikan MP3, dan hentikan suara browser. */
+    stopSpeech() {
+      this._cancelSequence();
+      this._haltSpeech();
+      this._haltClip();
+    }
+
+    _haltSpeech() {
+      if (this.speech) this.speech.cancel();
+      this.speaking = false;
+      const finish = this.speechFinish;
+      this.speechFinish = null;
+      if (finish) finish();
+    }
+
+    _haltClip() {
+      if (!this.clip) return;
+      try { this.clip.pause(); } catch (error) { /* abaikan */ }
+      this.clip = null;
+      const finish = this.clipFinish;
+      this.clipFinish = null;
+      if (finish) finish();
+    }
+
+    _cancelSequence() {
+      this.sequenceToken += 1;
+      if (this.sequenceTimer) {
+        clearTimeout(this.sequenceTimer);
+        this.sequenceTimer = null;
+      }
+    }
+
+    /* Suara satu kalimat. Selalu menghentikan suara/urutan sebelumnya
+       supaya dua audio tidak pernah berbunyi bersamaan. */
     speak(text, options) {
+      this._cancelSequence();
+      return this._speakNow(text, options);
+    }
+
+    _speakNow(text, options) {
       const opts = options || {};
       if (!this.soundOn) {
         if (opts.notify) this._notice('Suara sedang dimatikan. Nyalakan lewat tombol suara di kanan atas.');
@@ -339,6 +393,53 @@ FLA.AudioManager = (function () {
       }
       if (this._playTts(text, opts)) return true;
       return this._speakBrowser(text, opts);
+    }
+
+    /* Bacakan beberapa kalimat berurutan dengan jeda alami.
+       Dipakai untuk instruksi, pertanyaan kuis, dan daftar A–Z. */
+    speakSequence(texts, options) {
+      const opts = options || {};
+      const list = (texts || []).map((text) => String(text || '').trim()).filter(Boolean);
+      this._cancelSequence();
+      this._haltSpeech();
+      this._haltClip();
+      if (!this.soundOn) {
+        if (opts.notify) this._notice('Suara sedang dimatikan. Nyalakan lewat tombol suara di kanan atas.');
+        if (opts.onEnd) opts.onEnd();
+        return false;
+      }
+      if (!list.length) {
+        if (opts.onEnd) opts.onEnd();
+        return false;
+      }
+      const token = this.sequenceToken;
+      const gap = Math.max(80, typeof opts.gap === 'number' ? opts.gap : 320);
+      let index = 0;
+      if (opts.onStart) opts.onStart();
+
+      const run = () => {
+        if (token !== this.sequenceToken) return;
+        if (index >= list.length) {
+          if (opts.onEnd) opts.onEnd();
+          return;
+        }
+        const text = list[index];
+        const position = index;
+        index += 1;
+        this._speakNow(text, {
+          onStart: () => { if (opts.onItem) opts.onItem(text, position); },
+          onEnd: () => {
+            if (token !== this.sequenceToken) return;
+            this.sequenceTimer = setTimeout(() => {
+              this.sequenceTimer = null;
+              run();
+            }, gap);
+          }
+        });
+      };
+
+      run();
+      return true;
     }
 
     /* Cadangan: suara bawaan browser (Web Speech API) */
@@ -354,47 +455,47 @@ FLA.AudioManager = (function () {
         this._notice('Perangkat ini belum punya suara Bahasa Indonesia, jadi pelafalan bisa salah. ' +
           'Pasang suara Indonesia (Damayanti di iPhone/Mac, Gadis di Windows) di pengaturan perangkat.');
       }
-      this.stopSpeech();
-      this.stopClip();
+      this._haltSpeech();
+      this._haltClip();
       const utterance = new SpeechSynthesisUtterance(this._pronounce(text));
       utterance.lang = 'id-ID';
       utterance.rate = typeof opts.rate === 'number' ? opts.rate : 1.08;
       utterance.pitch = 1.55; /* nada tinggi, ceria seperti gadis periang */
       utterance.volume = Math.max(0, this.volume);
       if (this.indonesianVoice) utterance.voice = this.indonesianVoice;
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        if (this.speechFinish === finish) this.speechFinish = null;
+        this.speaking = false;
+        if (opts.onEnd) opts.onEnd();
+      };
+      this.speechFinish = finish;
       utterance.onstart = () => {
         this.speaking = true;
         if (opts.onStart) opts.onStart();
       };
-      utterance.onend = () => {
-        this.speaking = false;
-        if (opts.onEnd) opts.onEnd();
-      };
-      utterance.onerror = () => {
-        this.speaking = false;
-        if (opts.onEnd) opts.onEnd();
-      };
+      utterance.onend = finish;
+      utterance.onerror = finish;
       this.speaking = true;
       this.speech.speak(utterance);
       return true;
     }
 
-    stopSpeech() {
-      if (this.speech) this.speech.cancel();
-      this.speaking = false;
-    }
-
     stopClip() {
-      if (this.clip) {
-        try { this.clip.pause(); } catch (error) { /* abaikan */ }
-        this.clip = null;
-      }
+      this._haltClip();
     }
 
     /* Mengucapkan huruf, suku kata, atau kalimat pendek.
        key  : nama berkas (tanpa ekstensi) di assets/audio/huruf/, mis. "b" atau "ba"
        text : teks yang dibacakan Web Speech API jika berkas tidak ada. */
     say(key, text, options) {
+      this._cancelSequence();
+      return this._sayNow(key, text, options);
+    }
+
+    _sayNow(key, text, options) {
       const opts = options || {};
       const spoken = text || key;
       if (!this.soundOn) {
@@ -402,26 +503,38 @@ FLA.AudioManager = (function () {
         if (opts.onEnd) opts.onEnd();
         return false;
       }
-      if (this.manifest[this._norm(spoken)]) return this.speak(spoken, opts);
+      if (this.manifest[this._norm(spoken)]) return this._speakNow(spoken, opts);
       const site = FLA.data && FLA.data.site;
       const fileKey = String(key || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
       if (site && site.audioFiles && fileKey && !this.missingClips[fileKey]) {
-        this.stopSpeech();
-        this.stopClip();
+        this._haltSpeech();
+        this._haltClip();
         const clip = new Audio(site.audioFolder + fileKey + '.mp3');
         clip.volume = this.volume;
         this.clip = clip;
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          if (this.clip === clip) this.clip = null;
+          if (this.clipFinish === finish) this.clipFinish = null;
+          this.speaking = false;
+          if (opts.onEnd) opts.onEnd();
+        };
+        this.clipFinish = finish;
         clip.addEventListener('error', () => {
+          done = true;
           this.missingClips[fileKey] = true;
           if (this.clip === clip) this.clip = null;
-          this.speak(spoken, opts);
+          if (this.clipFinish === finish) this.clipFinish = null;
+          this._speakNow(spoken, opts);
         }, { once: true });
-        clip.addEventListener('ended', () => { if (opts.onEnd) opts.onEnd(); }, { once: true });
+        clip.addEventListener('ended', finish, { once: true });
         const promise = clip.play();
         if (promise && promise.catch) promise.catch(() => { /* error event menangani cadangan */ });
         return true;
       }
-      return this.speak(spoken, Object.assign({ rate: 1.0, notify: true }, opts));
+      return this._speakNow(spoken, Object.assign({ rate: 1.0, notify: true }, opts));
     }
 
     get hasSpeech() {

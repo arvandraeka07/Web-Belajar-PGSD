@@ -1,31 +1,33 @@
 #!/usr/bin/env python3
-"""Membuat ulang semua audio situs dengan suara GADIS PERIANG (Google TTS Indonesia).
+"""Membuat ulang semua audio situs dengan suara GADIS PERIANG Bahasa Indonesia.
 
-Suara Google Bahasa Indonesia adalah suara perempuan yang natural. Agar terdengar
-seperti gadis periang (seperti video AI voice changer), nada dinaikkan sedikit dan
-tempo dipercepat sedikit memakai filter "rubberband" dari ffmpeg. Hasilnya tetap
-tersimpan sebagai MP3 di assets/audio/tts/, jadi situs tidak butuh internet saat dipakai.
+Mesin utama: Microsoft Edge Neural TTS, voice id-ID-GadisNeural. Suara ini
+natural, ramah, dan konsisten untuk seluruh kalimat. Bila edge-tts belum
+terpasang, skrip otomatis memakai Google TTS (gTTS) dengan sedikit penggeseran
+nada. Hasilnya tetap MP3 di assets/audio/tts/, jadi situs tidak butuh internet
+saat dipakai.
 
-Persiapan:
+Persiapan (disarankan):
+    pip install edge-tts
+Alternatif:
     pip install gTTS
     pip install imageio-ffmpeg      (ffmpeg + rubberband, tanpa install manual)
-    (atau pastikan perintah "ffmpeg" tersedia di PATH)
 
 Jalankan dari folder proyek:
-    python tools/list_tts_texts.js           # perbarui daftar kalimat (butuh Node.js)
-    python tools/generate_gtts_gadis.py      # buat semua audio
-    python tools/generate_gtts_gadis.py --pitch 1.15 --tempo 1.05
-    python tools/generate_gtts_gadis.py --paksa     # abaikan cache sementara
-    python tools/generate_gtts_gadis.py --tanpa-geser  # suara asli Google TTS
+    node tools/list_tts_texts.js              # perbarui daftar kalimat
+    python tools/generate_gtts_gadis.py       # Edge TTS, semua kalimat
+    python tools/generate_gtts_gadis.py --engine gtts --pitch 1.12 --tempo 1.03
+    python tools/generate_gtts_gadis.py --paksa   # abaikan cache sementara
 
 Hasil:
     assets/audio/tts/<hash>.mp3     satu berkas per kalimat
     assets/audio/tts/manifest.json  peta kalimat -> berkas (dibaca js/audio.js)
 
-Nama berkas memakai sha1(normalize(teks)), sama seperti tools/render_offline.py,
-jadi manifest lama tetap berlaku dan hanya isi suaranya yang berganti.
+Nama berkas memakai sha1(normalize(teks)), sama seperti js/audio.js, jadi
+manifest lama tetap berlaku dan hanya isi suaranya yang berganti.
 """
 import argparse
+import asyncio
 import hashlib
 import json
 import shutil
@@ -38,7 +40,14 @@ from pathlib import Path
 try:
     from gtts import gTTS
 except ImportError:
-    sys.exit("Pasang dulu: pip install gTTS")
+    gTTS = None
+
+try:
+    import edge_tts
+except ImportError:
+    edge_tts = None
+
+EDGE_VOICE = "id-ID-GadisNeural"
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "assets" / "audio" / "tts"
@@ -97,6 +106,8 @@ def find_ffmpeg():
 
 
 def tts_to_file(text, dest, attempts=6):
+    if gTTS is None:
+        raise RuntimeError("gTTS belum terpasang. Jalankan: pip install gTTS")
     for attempt in range(attempts):
         try:
             gTTS(text, lang="id", tld="co.id", slow=False).save(dest)
@@ -106,6 +117,25 @@ def tts_to_file(text, dest, attempts=6):
             print("  (coba %d) %s" % (attempt + 1, error))
         time.sleep(1.2 * (attempt + 1))
     raise RuntimeError("gagal membuat suara untuk: %s" % text)
+
+
+def edge_to_file(text, dest, attempts=5):
+    if edge_tts is None:
+        raise RuntimeError("edge-tts belum terpasang. Jalankan: pip install edge-tts")
+
+    async def save():
+        communicate = edge_tts.Communicate(text, EDGE_VOICE, rate="+6%", pitch="+2Hz")
+        await communicate.save(str(dest))
+
+    for attempt in range(attempts):
+        try:
+            asyncio.run(save())
+            if dest.exists() and dest.stat().st_size > 800:
+                return
+        except Exception as error:  # noqa: BLE001
+            print("  (coba %d) %s" % (attempt + 1, error))
+        time.sleep(1.5 * (attempt + 1))
+    raise RuntimeError("gagal membuat suara Edge untuk: %s" % text)
 
 
 def pitch_shift(src, dest, ffmpeg, pitch, tempo):
@@ -122,19 +152,31 @@ def pitch_shift(src, dest, ffmpeg, pitch, tempo):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--pitch", type=float, default=1.12, help="faktor nada (default 1.12 = gadis periang)")
-    ap.add_argument("--tempo", type=float, default=1.03, help="faktor tempo (default 1.03 = agak ceria)")
+    ap.add_argument("--engine", choices=["auto", "edge", "gtts"], default="auto",
+                    help="mesin suara (default auto: Edge TTS bila tersedia)")
+    ap.add_argument("--pitch", type=float, default=1.12, help="faktor nada gTTS (default 1.12)")
+    ap.add_argument("--tempo", type=float, default=1.03, help="faktor tempo gTTS (default 1.03)")
     ap.add_argument("--tanpa-geser", action="store_true", help="pakai suara Google TTS apa adanya")
     ap.add_argument("--paksa", action="store_true", help="buat ulang walau cache sementara sudah ada")
     args = ap.parse_args()
+
+    engine = args.engine
+    if engine == "auto":
+        engine = "edge" if edge_tts is not None else "gtts"
+    if engine == "edge" and edge_tts is None:
+        sys.exit("Edge TTS belum terpasang. Jalankan: pip install edge-tts")
+    if engine == "gtts" and gTTS is None:
+        sys.exit("gTTS belum terpasang. Jalankan: pip install gTTS")
 
     if not TEXTS.exists():
         sys.exit("Jalankan dulu: node tools/list_tts_texts.js")
     texts = json.loads(TEXTS.read_text(encoding="utf-8"))
 
-    ffmpeg = None if args.tanpa_geser else find_ffmpeg()
-    if not args.tanpa_geser and not ffmpeg:
-        sys.exit("ffmpeg tidak ditemukan. Pasang: pip install imageio-ffmpeg")
+    ffmpeg = None
+    if engine == "gtts" and not args.tanpa_geser:
+        ffmpeg = find_ffmpeg()
+        if not ffmpeg:
+            sys.exit("ffmpeg tidak ditemukan. Pasang: pip install imageio-ffmpeg")
 
     STAGE.mkdir(parents=True, exist_ok=True)
     OUT.mkdir(parents=True, exist_ok=True)
@@ -147,21 +189,27 @@ def main():
         seen.add(n)
         items.append((n, text))
 
-    print("Suara: Google TTS Indonesia (%s) | pitch %.2f tempo %.2f" % (
-        "tanpa geser" if args.tanpa_geser else "gadis periang", args.pitch, args.tempo))
+    if engine == "edge":
+        print("Suara: Microsoft Edge Neural TTS (%s) | rate +6%% pitch +2Hz" % EDGE_VOICE)
+    else:
+        print("Suara: Google TTS Indonesia (%s) | pitch %.2f tempo %.2f" % (
+            "tanpa geser" if args.tanpa_geser else "gadis periang", args.pitch, args.tempo))
     print("%d kalimat unik." % len(items))
 
     for i, (n, text) in enumerate(items, 1):
         name = file_name(text)
         staged = STAGE / name
         if args.paksa or not (staged.exists() and staged.stat().st_size > 800):
-            raw = STAGE / (name + ".raw.mp3")
-            tts_to_file(pronounce(text), raw)
-            if args.tanpa_geser:
-                shutil.copyfile(raw, staged)
+            if engine == "edge":
+                edge_to_file(pronounce(text), staged)
             else:
-                pitch_shift(raw, staged, ffmpeg, args.pitch, args.tempo)
-            raw.unlink(missing_ok=True)
+                raw = STAGE / (name + ".raw.mp3")
+                tts_to_file(pronounce(text), raw)
+                if args.tanpa_geser:
+                    shutil.copyfile(raw, staged)
+                else:
+                    pitch_shift(raw, staged, ffmpeg, args.pitch, args.tempo)
+                raw.unlink(missing_ok=True)
         if i % 10 == 0 or i == len(items):
             print("[%d/%d] %s" % (i, len(items), text[:60]))
 
@@ -183,7 +231,7 @@ def main():
             removed += 1
     if removed:
         print("Menghapus %d berkas suara lama." % removed)
-    print("Selesai. %d audio gadis periang di %s" % (len(manifest), OUT.relative_to(ROOT)))
+    print("Selesai. %d audio (%s) di %s" % (len(manifest), engine, OUT.relative_to(ROOT)))
 
 
 if __name__ == "__main__":

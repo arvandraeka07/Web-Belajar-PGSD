@@ -1,6 +1,6 @@
-# Fun Learning Adventure
+# Huruforia
 
-Media pembelajaran interaktif untuk siswa Sekolah Dasar (SD) yang dibuat sebagai proyek akhir semester PGSD. Seluruh aplikasi berjalan di browser tanpa server backend berbayar.
+Media belajar interaktif untuk mengenal huruf. Seluruh aplikasi berjalan di browser tanpa server backend berbayar.
 
 ## Fitur (revisi tema "Mengenal Huruf", tanpa pembatasan kelas)
 
@@ -12,7 +12,7 @@ Media pembelajaran interaktif untuk siswa Sekolah Dasar (SD) yang dibuat sebagai
 - **Game**: peta petualangan tiga pos yang terbuka bertahap (Gerbang Rahasia Huruf, Jembatan Huruf, Harta Karun Kata). Tiap pos punya petunjuk, tombol mulai, tantangan, skor, efek suara, animasi keberhasilan, dan bintang. Pos selesai bila mendapat minimal 1 bintang (benar ≥ 50%).
 - **Evaluasi**: 10 soal interaktif (suara, kapital, huruf kecil, urutan alfabet, vokal) dengan umpan balik langsung.
 - **Perkembangan Belajar** (`#/progres`): tiga kategori (Mengenal Huruf, Mencocokkan Huruf, Mengenal Suku Kata) berisi grafik jawaban benar, jumlah bintang, materi dikuasai / perlu dilatih, dan riwayat skor evaluasi.
-- **Audio**: suara gadis periang Bahasa Indonesia yang sudah disertakan di `assets/audio/tts/` (langsung jalan, tanpa API); bisa diganti ke suara ElevenLabs; kalimat yang belum punya berkas memakai Web Speech API (id-ID). Tombol Suara untuk mengaktifkan/menonaktifkan semua audio.
+- **Audio**: suara Huruforia berbahasa Indonesia dari Microsoft Edge Neural TTS (`id-ID-GadisNeural`), sudah disertakan di `assets/audio/tts/` sehingga langsung jalan tanpa API. Setiap pertanyaan, instruksi, pujian, dan umpan balik dibacakan. Kalimat yang belum punya berkas memakai Web Speech API (id-ID). Tombol Suara mengaktifkan/menonaktifkan semua audio.
 - Progres disimpan di `localStorage` (`fla_huruf_progress_v1`, `fla_audio_v1`). Tampilan responsif.
 
 ## Cara Menjalankan
@@ -91,16 +91,22 @@ python tools/generate_videos.py --statis                         # versi slide s
 - Durasi mengikuti panjang narasi; dengan semua narasi terisi durasi bertambah mendekati 6-7 menit.
 
 
-## Suara gadis periang (bawaan, offline setelah dibuat)
+## Suara Huruforia (bawaan, offline setelah dibuat)
 
-Semua pengucapan sudah dibuat dan tersimpan di `assets/audio/tts/` (268 MP3 + `manifest.json` + `manifest.js`), jadi situs langsung bersuara Indonesia tanpa akun atau internet saat dipakai. Suaranya memakai Google TTS Bahasa Indonesia yang natural, lalu nadanya dinaikkan sedikit (pitch 1,12) dan tempo dipercepat sedikit (1,03) agar terdengar seperti gadis periang. `manifest.js` dimuat langsung oleh `index.html`, sehingga klik pertama pada huruf A/B/C di beranda tidak menunggu `fetch`.
+Semua pengucapan sudah dibuat dan tersimpan di `assets/audio/tts/` (MP3 + `manifest.json` + `manifest.js`), jadi situs langsung bersuara Indonesia tanpa akun atau internet saat dipakai. Suaranya memakai Microsoft Edge Neural TTS `id-ID-GadisNeural` dengan rate +6% dan pitch +2Hz agar ramah dan ceria. `manifest.js` dimuat langsung oleh `index.html`, sehingga klik pertama pada huruf A/B/C di beranda tidak menunggu `fetch`.
 
-Untuk membuat ulang setelah teks diubah (`pip install gTTS imageio-ffmpeg`):
+Untuk membuat ulang setelah teks diubah (`pip install edge-tts`):
 
 ```bash
 node tools/list_tts_texts.js                 # perbarui daftar kalimat
-python tools/generate_gtts_gadis.py          # buat semua audio gadis periang
-python tools/generate_gtts_gadis.py --tanpa-geser   # suara Google TTS apa adanya
+python tools/generate_gtts_gadis.py          # Edge TTS, semua kalimat
+python tools/generate_gtts_gadis.py --paksa  # buat ulang semua audio
+```
+
+Tanpa edge-tts, skrip otomatis memakai gTTS (`pip install gTTS imageio-ffmpeg`):
+
+```bash
+python tools/generate_gtts_gadis.py --engine gtts --pitch 1.12 --tempo 1.03
 ```
 
 Uji cepat logika audio (manifest, huruf A/B/C, sambutan, cadangan Web Speech):
@@ -109,9 +115,9 @@ Uji cepat logika audio (manifest, huruf A/B/C, sambutan, cadangan Web Speech):
 node tools/test_audio.js
 ```
 
-## Suara ElevenLabs (Maya) — opsional, lebih natural
+## Suara ElevenLabs (Maya), opsional
 
-Seluruh pengucapan (huruf, suku kata, kata, pujian, instruksi, tombol *Bacakan Materi*) dibuat sekali lewat API ElevenLabs lalu disimpan sebagai MP3, jadi situs tidak butuh internet atau API key saat dipakai siswa.
+Audio yang disertakan sudah memakai Edge TTS `id-ID-GadisNeural`. Bagian ini hanya diperlukan jika ingin mengganti seluruh pengucapan (huruf, suku kata, kata, pujian, instruksi, tombol *Bacakan Materi*) dengan suara Maya dari ElevenLabs. Hasilnya tetap disimpan sebagai MP3, jadi situs tidak butuh internet atau API key saat dipakai siswa.
 
 **Lewat terminal:**
 
@@ -130,6 +136,6 @@ python tools/generate_elevenlabs.py            # suara Maya (ID U3dExJoUNcmTY5H6
 - Pengaturan suara (stabilitas 0,5, gaya 0,3, kecepatan 1,0) ada di `VOICE_SETTINGS` pada `tools/generate_elevenlabs.py`.
 - Mengubah teks di `js/data.js`: jalankan `python tools/generate_elevenlabs.py --refresh`; hanya kalimat baru yang memakai kredit.
 - Kalimat yang masih jatuh ke suara browser bisa dicek lewat konsol: `FLA.audio.exportMissing()`. Simpan hasilnya ke `baru.txt` lalu `python tools/generate_elevenlabs.py --tambah baru.txt`.
-- Narasi video: jika `ELEVENLABS_API_KEY` terisi, `python tools/generate_videos.py --hanya=membaca` otomatis memakai suara yang sama (gTTS hanya jadi cadangan). Video `membaca.mp4` tidak ada di paket ini, jadi perlu dibuat ulang agar suaranya ikut berganti.
+- Narasi video: `assets/videos/membaca.mp4` sudah tersedia. Jika ingin suara Maya di video juga, isi `ELEVENLABS_API_KEY` lalu jalankan `python tools/generate_videos.py --hanya=membaca` agar video dibuat ulang dengan suara tersebut (gTTS hanya cadangan).
 - Logat Indonesia: nama huruf dan suku kata ditulis dengan tanda é/è saat dikirim ke ElevenLabs (be → "bé", me → "mé", we → "wé", ef → "èf") agar tidak terdengar seperti bahasa Inggris. Tabelnya ada di `LETTER_SOUND`/`NAME_SOUND` pada `tools/generate_elevenlabs.py` dan `_pronounce()` pada `js/audio.js`; ubah di sana bila ada huruf yang masih terdengar aneh.
 - Kira-kira 11.000 karakter kredit untuk seluruh situs.

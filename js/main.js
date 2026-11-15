@@ -52,12 +52,12 @@ window.FLA = window.FLA || {};
   ];
 
   const pageTitles = {
-    beranda: 'Mengenal Huruf — Fun Learning Adventure',
-    video: 'Video Pengenalan Huruf — Fun Learning Adventure',
-    materi: 'Materi Mengenal Huruf — Fun Learning Adventure',
-    game: 'Peta Petualangan Huruf — Fun Learning Adventure',
-    evaluasi: 'Evaluasi — Fun Learning Adventure',
-    progres: 'Perkembangan Belajar — Fun Learning Adventure'
+    beranda: 'Huruforia — Belajar Mengenal Huruf',
+    video: 'Video Pengenalan Huruf — Huruforia',
+    materi: 'Materi Mengenal Huruf — Huruforia',
+    game: 'Peta Petualangan Huruf — Huruforia',
+    evaluasi: 'Evaluasi — Huruforia',
+    progres: 'Perkembangan Belajar — Huruforia'
   };
 
   let currentPage = null;
@@ -206,9 +206,9 @@ window.FLA = window.FLA || {};
           '<span class="hero__star hero__star--one">' + ui.icon('star') + '</span>' +
           '<span class="hero__star hero__star--two">' + ui.icon('sparkles') + '</span>' +
           '<div class="hero__content">' +
-            '<span class="hero__eyebrow">' + ui.icon('sparkles') + ' Media belajar interaktif untuk SD</span>' +
-            '<h1>Selamat Datang, <span class="text-pop">Mengenal Huruf</span></h1>' +
-            '<p class="hero__subtitle">Ayo belajar huruf langkah demi langkah!</p>' +
+            '<span class="hero__eyebrow">' + ui.icon('sparkles') + ' Media belajar interaktif</span>' +
+            '<h1>Selamat Datang di <span class="text-pop">Huruforia</span></h1>' +
+            '<p class="hero__subtitle">Ayo belajar mengenal huruf langkah demi langkah!</p>' +
             '<p>Hai, teman! Aku <strong>Huhu</strong>. Yuk tonton video, baca materi, main petualangan huruf, dan uji kemampuanmu.</p>' +
             '<div class="hero__actions">' +
               '<button type="button" class="btn btn--yellow btn--lg" id="startLearning">' + ui.icon('play') + ' Mulai Belajar</button>' +
@@ -666,16 +666,17 @@ window.FLA = window.FLA || {};
   function openAbout() {
     FLA.audio.sfx('click');
     ui.openModal({
-      title: 'Tentang Fun Learning Adventure',
+      title: 'Tentang Huruforia',
       className: 'modal-card--about',
       body:
-        '<p class="modal-text">Media pembelajaran interaktif bertema <strong>Mengenal Huruf</strong> untuk siswa Sekolah Dasar, dibuat sebagai proyek akhir semester PGSD. Website berjalan sepenuhnya di browser dan menyimpan progres di perangkatmu.</p>' +
+        '<p class="modal-text"><strong>Huruforia</strong> adalah media belajar interaktif bertema <strong>Mengenal Huruf</strong> untuk anak. Semua aktivitas berjalan di browser dan progres belajarmu tersimpan di perangkat ini.</p>' +
         '<div class="about-block"><h3>Menu belajar</h3><p>Video pengenalan huruf, tiga materi bergambar dengan suara, peta petualangan tiga pos, evaluasi interaktif, dan halaman perkembangan belajar.</p></div>' +
         '<div class="about-block"><h3>Aset &amp; lisensi</h3>' +
           '<ul class="about-list">' +
             '<li><strong>Ikon &amp; ilustrasi</strong> — dibuat khusus bergaya Huhu (berkas <code>om-*.svg</code> hanyalah nama lama, isinya bukan lagi OpenMoji).</li>' +
             '<li><strong>Font Baloo 2 &amp; Nunito</strong> — Google Fonts, lisensi SIL Open Font License.</li>' +
-            '<li><strong>Maskot, ilustrasi huruf, peta petualangan, dan efek suara</strong> — dibuat khusus untuk proyek ini.</li><li><strong>Pengucapan huruf</strong> — Web Speech API browser (Bahasa Indonesia) atau berkas audio sendiri.</li>' +
+            '<li><strong>Maskot, ilustrasi huruf, peta petualangan, dan efek suara</strong> — dibuat khusus untuk proyek ini.</li>' +
+            '<li><strong>Suara Huruforia</strong> — Voice Over Bahasa Indonesia dari Microsoft Edge Neural TTS (id-ID-GadisNeural), tersimpan sebagai MP3. Bila berkas tidak tersedia, situs memakai Web Speech API browser.</li>' +
           '</ul>' +
         '</div>' +
         '<div class="about-block"><h3>Privasi</h3><p>Tidak ada akun dan tidak ada data yang dikirim ke server. Semua progres disimpan di LocalStorage browser ini.</p></div>',

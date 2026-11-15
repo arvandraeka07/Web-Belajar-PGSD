@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Server lokal untuk Fun Learning Adventure."""
+"""Server lokal untuk Huruforia."""
 
 import http.server
 import os
@@ -110,7 +110,7 @@ def main():
         return
 
     url = "http://%s:%d/" % (HOST, port)
-    print("Fun Learning Adventure berjalan di %s" % url)
+    print("Huruforia berjalan di %s" % url)
     print("Tekan Ctrl+C untuk menghentikan server.")
     try:
         (os.environ.get("NO_BROWSER") or webbrowser.open(url))

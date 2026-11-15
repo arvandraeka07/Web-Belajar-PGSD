@@ -1,6 +1,6 @@
 # Atribusi dan Lisensi Aset
 
-Proyek **Fun Learning Adventure** menggunakan aset pihak ketiga berikut.
+Proyek **Huruforia** menggunakan aset pihak ketiga berikut.
 
 ## Ikon
 
@@ -27,7 +27,8 @@ Aset berikut dibuat khusus untuk proyek ini dan tidak berasal dari pihak ketiga:
 Alat berikut digunakan untuk menghasilkan aset, bukan bagian dari aplikasi yang dikirim ke pengguna:
 
 - **Python 3**, **Pillow** (HPND), **numpy** (BSD-3-Clause)
-- **gTTS** (MPL-2.0) untuk suara gadis periang Bahasa Indonesia di `assets/audio/tts/` dan narasi video
+- **Microsoft Edge Neural TTS** (voice `id-ID-GadisNeural`) untuk suara Huruforia di `assets/audio/tts/`
+- **gTTS** (MPL-2.0) sebagai cadangan pembuatan suara dan untuk narasi video
 - **imageio-ffmpeg** dan **FFmpeg** (termasuk filter *rubberband*) untuk pengodean video dan penalaan nada suara
 - **sharp** (Apache-2.0) untuk perasterisasi ikon SVG
 
@@ -35,7 +36,7 @@ Alat berikut digunakan untuk menghasilkan aset, bukan bagian dari aplikasi yang 
 
 Jika proyek ini digunakan dalam laporan akademik, cantumkan:
 
-> Fun Learning Adventure: Media Pembelajaran Interaktif untuk Siswa Sekolah Dasar. Proyek akhir semester PGSD, 2026.
+> Huruforia: Media Belajar Interaktif Mengenal Huruf, 2026.
 
 ## Catatan Identitas Visual
 

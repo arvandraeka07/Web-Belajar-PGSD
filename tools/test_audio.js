@@ -52,12 +52,13 @@ class FakeAudio {
   constructor(src) {
     this.src = src;
     this.volume = 1;
+    this.paused = false;
     this.listeners = {};
     played.push(this);
   }
   addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); }
-  play() { setTimeout(() => (this.listeners.playing || []).forEach((fn) => fn()), 0); return Promise.resolve(); }
-  pause() {}
+  play() { this.paused = false; setTimeout(() => (this.listeners.playing || []).forEach((fn) => fn()), 0); return Promise.resolve(); }
+  pause() { this.paused = true; }
 }
 ctx.Audio = FakeAudio;
 const spoken = [];
@@ -80,6 +81,11 @@ ctx.fetch = () => Promise.reject(new Error('offline tes'));
 run('js/audio.js');
 const audio = ctx.FLA.audio;
 
+const ttsTexts = JSON.parse(fs.readFileSync(path.join(root, 'tools', 'tts_texts.json'), 'utf8'));
+const withoutAudio = ttsTexts.filter((text) => !manifest[audio._norm(text)]);
+check('semua kalimat di tts_texts.json punya berkas audio',
+  withoutAudio.length === 0, withoutAudio.length + ' tanpa audio');
+
 check('memilih suara perempuan Indonesia (Gadis), bukan Andika',
   audio.indonesianVoice && /gadis/i.test(audio.indonesianVoice.name),
   audio.indonesianVoice && audio.indonesianVoice.name);
@@ -98,10 +104,27 @@ const fileFor = (n) => manifest[n];
 });
 
 played.length = 0;
-audio.speak('Selamat datang! Mengenal huruf. Ayo belajar huruf langkah demi langkah!');
+audio.speak(ctx.FLA.data.site.welcomeSpeech);
 check('sambutan beranda memakai MP3 gadis',
   played.length === 1 && /assets\/audio\/tts\/.+\.mp3$/.test(played[0].src),
   played.length ? played[0].src : 'tidak ada audio');
+
+played.length = 0;
+audio.speak('a');
+const firstClip = audio.clip;
+audio.stopSpeech();
+check('stopSpeech menghentikan MP3 yang sedang berbunyi',
+  Boolean(firstClip && firstClip.paused && audio.clip === null));
+
+let canceledEnd = 0;
+audio.speak('a', { onEnd: () => { canceledEnd += 1; } });
+audio.speak('be');
+check('onEnd dipanggil saat audio dihentikan agar status tombol tidak nyangkut',
+  canceledEnd === 1, canceledEnd + ' panggilan');
+audio.stopSpeech();
+
+check('speakSequence tersedia untuk instruksi berurutan',
+  typeof audio.speakSequence === 'function');
 
 ['Halo, teman! Siap mengenal huruf hari ini?',
   'Aku Huhu. Ayo kita belajar huruf dari A sampai Z!',

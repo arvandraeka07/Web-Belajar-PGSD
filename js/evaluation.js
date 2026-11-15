@@ -189,6 +189,9 @@ FLA.pages.evaluation = (function () {
 
     activeView = FLA.quiz.render(ui.$('#examQa', root), question.source, {
       retry: false,
+      autoSpeak: true,
+      introText: currentIndex === 0 ? 'Ada sepuluh soal. Dengarkan pertanyaan dengan saksama, lalu pilih jawaban yang benar.' : null,
+      outroText: currentIndex === 0 ? 'Ayo, kita mulai!' : null,
       onAnswer: (result) => {
         answers[currentIndex] = result.index;
         const src = question.source;

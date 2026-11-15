@@ -391,7 +391,7 @@ FLA.data = (function () {
       goal: 'Mengenalkan huruf alfabet.',
       color: 'blue',
       icon: IMG + 'om-1F3C1.svg',
-      speech: 'Selamat datang di Pos Satu, Gerbang Rahasia Huruf! Dengarkan, lihat, dan pilih huruf yang benar untuk membuka gerbang.',
+      speech: 'Selamat datang di Pos Satu, Gerbang Rahasia Huruf! Dengarkan, lihat, lalu pilih huruf yang benar untuk membuka gerbang. Ini petunjuknya. Satu, tebak huruf berdasarkan suara. Dua, tebak huruf berdasarkan gambar. Tiga, lengkapi urutan alfabet. Empat, pilih huruf yang benar. Setiap jawaban benar bernilai sepuluh poin. Ayo, kita mulai!',
       instructions: [
         'Tebak huruf berdasarkan suara.',
         'Tebak huruf berdasarkan gambar.',
@@ -409,7 +409,7 @@ FLA.data = (function () {
       goal: 'Mencocokkan huruf kapital dan huruf kecil.',
       color: 'green',
       icon: IMG + 'om-1F3AF.svg',
-      speech: 'Selamat datang di Pos Dua, Jembatan Huruf! Pasangkan huruf kapital dengan huruf kecil yang sama untuk menyeberangi jembatan.',
+      speech: 'Selamat datang di Pos Dua, Jembatan Huruf! Pasangkan huruf kapital dengan huruf kecil yang sama untuk menyeberangi jembatan. Ini petunjuknya. Cocokkan A dengan a, B dengan b, dan seterusnya. Ada papan berisi pasangan huruf yang diacak. Tekan huruf kapital, lalu huruf kecilnya. Kamu juga boleh menyeret hurufnya. Setiap pasangan benar bernilai sepuluh poin. Ayo, kita mulai!',
       instructions: [
         'Cocokkan A dengan a, B dengan b, dan seterusnya.',
         'Ada papan berisi pasangan huruf yang diacak.',
@@ -431,7 +431,7 @@ FLA.data = (function () {
       goal: 'Memperkuat pengenalan huruf dan suku kata.',
       color: 'orange',
       icon: IMG + 'om-1F3C6.svg',
-      speech: 'Selamat datang di Pos Tiga, Harta Karun Kata! Kenali huruf vokal, susun huruf, dan dengarkan suku kata untuk membuka peti harta.',
+      speech: 'Selamat datang di Pos Tiga, Harta Karun Kata! Kenali huruf vokal, susun huruf, dan dengarkan suku kata untuk membuka peti harta. Ini petunjuknya. Satu, kenali huruf vokal. Dua, susun huruf-huruf menjadi kata sederhana. Tiga, kenali gabungan suku kata. Empat, pilih jawaban berdasarkan suara yang kamu dengar. Ayo, kita mulai!',
       instructions: [
         'Kenali huruf vokal.',
         'Susun huruf-huruf menjadi kata sederhana.',
@@ -490,8 +490,8 @@ FLA.data = (function () {
 
   return {
     site: {
-      name: 'Fun Learning Adventure',
-      shortName: 'FLA',
+      name: 'Huruforia',
+      shortName: 'Huruforia',
       theme: 'Mengenal Huruf',
       mascot: 'Huhu',
       mascotImage: IMG + 'mascot-huhu.svg',
@@ -502,7 +502,7 @@ FLA.data = (function () {
          aplikasi otomatis memakai suara bawaan browser (Web Speech API). */
       audioFiles: false,
       audioFolder: 'assets/audio/huruf/',
-      welcomeSpeech: 'Selamat datang! Mengenal huruf. Ayo belajar huruf langkah demi langkah!',
+      welcomeSpeech: 'Selamat datang di Huruforia! Ayo belajar mengenal huruf langkah demi langkah!',
       welcome: [
         'Halo, teman! Siap mengenal huruf hari ini?',
         'Aku Huhu. Ayo kita belajar huruf dari A sampai Z!',

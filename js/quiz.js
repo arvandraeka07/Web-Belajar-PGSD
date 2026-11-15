@@ -14,8 +14,8 @@ FLA.quiz = (function () {
   const ui = FLA.ui;
   const d = FLA.data;
 
-  const PRAISE = ['Benar! Hebat!', 'Tepat sekali!', 'Pintar sekali!', 'Keren, jawabanmu benar!', 'Bagus sekali!'];
-  const TRY_AGAIN = ['Belum tepat. Ayo coba lagi!', 'Hampir benar. Coba sekali lagi, ya!'];
+  const PRAISE = ['Wah, hebat sekali! Jawaban kamu benar!', 'Tepat sekali!', 'Pintar sekali!', 'Keren, jawabanmu benar!', 'Bagus sekali!'];
+  const TRY_AGAIN = ['Yuk, coba sekali lagi. Kamu pasti bisa!', 'Hampir benar. Coba sekali lagi, ya!'];
 
   const pick = (list) => list[Math.floor(Math.random() * list.length)];
   const praise = () => pick(PRAISE);
@@ -55,6 +55,7 @@ FLA.quiz = (function () {
       return build({
         type: 'sound', cat: 'huruf', key: letter, optionStyle: 'letter',
         prompt: 'Dengarkan! Huruf apakah yang kamu dengar?',
+        spokenPrompt: 'Dengarkan baik-baik. Huruf apakah yang kamu dengar?',
         stem: { kind: 'speak', say: name, label: 'Dengarkan huruf', letter: letter },
         explanation: 'Huruf yang diucapkan adalah ' + letter + ', dibaca "' + name + '".'
       }, letter, lettersExcept([letter], 2));
@@ -67,6 +68,7 @@ FLA.quiz = (function () {
       return build({
         type: 'picture', cat: 'huruf', key: item.letter, optionStyle: 'letter',
         prompt: 'Nama gambar ini diawali huruf apa?',
+        spokenPrompt: 'Lihat gambar ini. Nama gambar ini diawali dengan huruf apa?',
         stem: { kind: 'pic', file: item.file, word: item.word, say: item.word },
         explanation: item.word + ' diawali huruf ' + item.letter + '.'
       }, item.letter, lettersExcept([item.letter], 2));
@@ -84,6 +86,7 @@ FLA.quiz = (function () {
       return build({
         type: 'sequence', cat: 'huruf', key: answer, optionStyle: 'letter',
         prompt: seq.map((ch, i) => (i === hidden ? '...' : ch)).join('-') + ' Huruf apakah yang hilang?',
+        spokenPrompt: 'Perhatikan urutan huruf ini. Huruf apakah yang hilang?',
         stem: { kind: 'seq', items: seq.map((ch, i) => (i === hidden ? '?' : ch)) },
         explanation: 'Urutan alfabetnya: ' + seq.join(', ') + '. Huruf yang hilang adalah ' + answer + '.'
       }, answer, distractors);
@@ -97,6 +100,7 @@ FLA.quiz = (function () {
       return build({
         type: 'capital', cat: 'huruf', key: letter, optionStyle: 'letter',
         prompt: 'Manakah huruf kapital (huruf besar)?',
+        spokenPrompt: 'Manakah huruf kapital, huruf besar?',
         stem: null,
         explanation: 'Huruf kapital adalah huruf besar. Yang kapital di sini adalah ' + letter + '.'
       }, letter, smalls);
@@ -115,6 +119,7 @@ FLA.quiz = (function () {
       return build({
         type: 'capital', cat: 'huruf', key: letter, optionStyle: 'letter',
         prompt: 'Manakah huruf kapital (huruf besar)?',
+        spokenPrompt: 'Manakah huruf kapital, huruf besar?',
         stem: null,
         explanation: 'Huruf kapital adalah huruf besar. Yang kapital di sini adalah ' + letter + '.'
       }, letter, smalls);
@@ -127,6 +132,7 @@ FLA.quiz = (function () {
       return build({
         type: 'lower', cat: 'cocok', key: letter + '-' + lower, optionStyle: 'letter',
         prompt: 'Manakah huruf kecil yang sama dengan huruf ' + letter + '?',
+        spokenPrompt: 'Manakah huruf kecil yang sama dengan huruf ' + letter + '?',
         stem: { kind: 'big', text: letter },
         explanation: 'Pasangan huruf kapital ' + letter + ' adalah huruf kecil ' + lower + '.'
       }, lower, lowerDistractors(lower));
@@ -146,6 +152,7 @@ FLA.quiz = (function () {
       return build({
         type: 'upper', cat: 'cocok', key: letter + '-' + lower, optionStyle: 'letter',
         prompt: 'Manakah huruf kapital yang sama dengan huruf kecil ' + lower + '?',
+        spokenPrompt: 'Manakah huruf kapital yang sama dengan huruf kecil ' + lower + '?',
         stem: { kind: 'big', text: lower },
         explanation: 'Pasangan huruf kecil ' + lower + ' adalah huruf kapital ' + letter + '.'
       }, letter, distractors);
@@ -160,6 +167,7 @@ FLA.quiz = (function () {
       return build({
         type: 'vowel', cat: 'suku', key: letter, optionStyle: 'letter',
         prompt: 'Manakah yang termasuk huruf vokal?',
+        spokenPrompt: 'Manakah yang termasuk huruf vokal?',
         stem: null,
         explanation: 'Huruf vokal ada lima: A, I, U, E, O. Huruf ' + consonants.join(' dan ') + ' adalah konsonan.'
       }, fmt(letter), consonants.map(fmt));
@@ -174,6 +182,7 @@ FLA.quiz = (function () {
       return build({
         type: 'syllable', cat: 'suku', key: vowel, optionStyle: 'letter',
         prompt: 'Gabungkan huruf-huruf ini. Menjadi suku kata apa?',
+        spokenPrompt: 'Gabungkan huruf-huruf ini. Menjadi suku kata apa?',
         stem: { kind: 'sum', parts: [consonant.toLowerCase(), vowel.toLowerCase()] },
         explanation: consonant.toLowerCase() + ' + ' + vowel.toLowerCase() + ' dibaca ' + text(vowel) + '.'
       }, text(vowel), others.map(text));
@@ -188,6 +197,7 @@ FLA.quiz = (function () {
       return build({
         type: 'syllableSound', cat: 'suku', key: vowel, optionStyle: 'letter',
         prompt: 'Dengarkan bunyinya! Suku kata apa yang kamu dengar?',
+        spokenPrompt: 'Dengarkan bunyinya. Suku kata apa yang kamu dengar?',
         stem: { kind: 'speak', say: text(vowel), label: 'Dengarkan suku kata' },
         explanation: 'Suku kata yang diucapkan adalah ' + text(vowel) + '.'
       }, text(vowel), others.map(text));
@@ -198,7 +208,7 @@ FLA.quiz = (function () {
       const q = opts.question;
       return {
         type: 'fixed', cat: null, key: null, optionStyle: 'text',
-        prompt: q.q, stem: null,
+        prompt: q.q, spokenPrompt: q.q, stem: null,
         options: q.options.slice(), answer: q.answer, explanation: q.explanation
       };
     }
@@ -259,10 +269,18 @@ FLA.quiz = (function () {
     return '';
   }
 
+  /* Kalimat yang dibacakan untuk satu soal: pertanyaan, lalu bunyi/gambar. */
+  function questionSpeech(q) {
+    const parts = [q.spokenPrompt || q.prompt];
+    if (q.stem && q.stem.say) parts.push(q.stem.say);
+    return parts.filter(Boolean);
+  }
+
   /* Menampilkan soal di dalam container.
      opts.retry     : jawaban salah boleh diulang (materi)
      opts.onAnswer  : callback({ correct, final, firstTry, attempts, index, question })
-     opts.autoSpeak : bunyikan soal suara otomatis (default true)
+     opts.autoSpeak : bacakan soal otomatis (default true)
+     opts.introText / opts.outroText : kalimat tambahan sebelum/sesudah soal
      opts.speakFeedback : ucapkan umpan balik (default true) */
   function render(container, q, opts) {
     const o = opts || {};
@@ -272,7 +290,10 @@ FLA.quiz = (function () {
 
     container.innerHTML =
       '<div class="qa" data-type="' + q.type + '">' +
-        '<p class="qa__prompt">' + ui.escapeHtml(q.prompt) + '</p>' +
+        '<div class="qa__prompt-row">' +
+          '<button type="button" class="qa-listen" data-listen aria-label="Dengarkan pertanyaan">' + ui.icon('volume') + '</button>' +
+          '<p class="qa__prompt">' + ui.escapeHtml(q.prompt) + '</p>' +
+        '</div>' +
         stemHtml(q) +
         '<div class="qa__options qa__options--' + q.optionStyle + ' qa__options--' + q.options.length + '" role="group" aria-label="Pilihan jawaban">' +
           q.options.map((text, index) =>
@@ -285,14 +306,32 @@ FLA.quiz = (function () {
     const feedback = ui.$('.qa__feedback', container);
     const buttons = ui.$$('.qa-option', container);
 
+    /* Batal otomatis jika anak menekan tombol suara atau menjawab lebih dulu. */
+    const stopAuto = () => {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    };
+
     function showFeedback(tone, html) {
       feedback.hidden = false;
       feedback.className = 'qa__feedback is-' + tone;
       feedback.innerHTML = html;
     }
 
+    const listen = ui.$('[data-listen]', container);
+    if (listen) {
+      listen.addEventListener('click', () => {
+        stopAuto();
+        FLA.audio.sfx('select');
+        FLA.audio.speakSequence(questionSpeech(q), { gap: 360 });
+      });
+    }
+
     ui.$$('[data-speak]', container).forEach((button) => {
       button.addEventListener('click', () => {
+        stopAuto();
         FLA.audio.say(button.dataset.speak, button.dataset.speak);
       });
     });
@@ -300,6 +339,7 @@ FLA.quiz = (function () {
     buttons.forEach((button) => {
       button.addEventListener('click', () => {
         if (locked || button.disabled) return;
+        stopAuto();
         const index = Number(button.dataset.option);
         const correct = index === q.answer;
         attempts += 1;
@@ -316,9 +356,10 @@ FLA.quiz = (function () {
         } else if (o.retry) {
           button.classList.add('is-wrong');
           button.disabled = true;
-          showFeedback('wrong', ui.icon('close') + ' <strong>' + ui.escapeHtml(tryAgain()) + '</strong>');
+          const retryText = tryAgain();
+          showFeedback('wrong', ui.icon('close') + ' <strong>' + ui.escapeHtml(retryText) + '</strong>');
           FLA.audio.sfx('wrong');
-          if (o.speakFeedback !== false) FLA.audio.speak('Belum tepat. Ayo coba lagi!');
+          if (o.speakFeedback !== false) FLA.audio.speak(retryText);
         } else {
           locked = true;
           buttons.forEach((b, i) => {
@@ -329,7 +370,7 @@ FLA.quiz = (function () {
           showFeedback('wrong', ui.icon('close') + ' <strong>Belum tepat.</strong> Jawaban yang benar: <strong>' +
             ui.escapeHtml(q.options[q.answer]) + '</strong>. ' + ui.escapeHtml(q.explanation));
           FLA.audio.sfx('wrong');
-          if (o.speakFeedback !== false) FLA.audio.speak('Belum tepat. Jawaban yang benar adalah ' + q.options[q.answer] + '.');
+          if (o.speakFeedback !== false) FLA.audio.speak('Belum tepat. Ayo belajar lagi, ya!');
         }
 
         if (typeof o.onAnswer === 'function') {
@@ -345,14 +386,22 @@ FLA.quiz = (function () {
       });
     });
 
-    if (q.stem && (q.stem.kind === 'speak' || q.stem.kind === 'pic') && o.autoSpeak !== false) {
-      timer = setTimeout(() => FLA.audio.say(q.stem.say, q.stem.say), 280);
+    if (o.autoSpeak !== false) {
+      const sequence = [];
+      if (o.introText) sequence.push(o.introText);
+      questionSpeech(q).forEach((text) => sequence.push(text));
+      if (o.outroText) sequence.push(o.outroText);
+      const delay = typeof o.autoSpeakDelay === 'number' ? o.autoSpeakDelay : 320;
+      timer = setTimeout(() => {
+        FLA.audio.speakSequence(sequence, { gap: typeof o.speakGap === 'number' ? o.speakGap : 380 });
+      }, delay);
     }
 
     return {
       destroy() {
         if (timer) clearTimeout(timer);
         locked = true;
+        FLA.audio.stopSpeech();
       }
     };
   }
@@ -424,10 +473,11 @@ FLA.quiz = (function () {
           t.disabled = true;
           t.classList.add('is-matched', 'is-' + colors[index % colors.length]);
         });
-        say('<strong>' + ui.escapeHtml(praise()) + '</strong> ' + letter + ' pasangannya ' + letter.toLowerCase() + '.', 'correct');
+        const praiseText = praise();
+        say('<strong>' + ui.escapeHtml(praiseText) + '</strong> ' + letter + ' pasangannya ' + letter.toLowerCase() + '.', 'correct');
         FLA.audio.sfx('correct');
         ui.burstFrom(lower);
-        FLA.audio.say(letter.toLowerCase(), 'Huruf kapital ' + letter + ', huruf kecil ' + letter.toLowerCase());
+        FLA.audio.speakSequence([praiseText, 'Huruf kapital ' + letter + ', huruf kecil ' + letter.toLowerCase()], { gap: 260 });
         if (o.onPair) o.onPair({ letter, correct: true, firstTry: !wrongs[letter] });
         if (Object.keys(matched).length === letters.length) {
           done = true;
@@ -447,6 +497,7 @@ FLA.quiz = (function () {
         });
         say('<strong>Belum cocok.</strong> Coba pasangkan lagi, ya!', 'wrong');
         FLA.audio.sfx('wrong');
+        FLA.audio.speak('Belum cocok. Coba pasangkan lagi, ya!');
         if (o.onPair) o.onPair({ letter, correct: false, firstTry: false });
       }
     }
@@ -456,13 +507,14 @@ FLA.quiz = (function () {
         if (done || tile.disabled) return;
         FLA.audio.sfx('select');
         const ch = tile.dataset.letter;
-        FLA.audio.say(ch.toLowerCase(), d.LETTER_NAMES[ch] || ch);
         if (!selected) {
+          FLA.audio.say(ch.toLowerCase(), d.LETTER_NAMES[ch] || ch);
           selected = tile;
           tile.classList.add('is-selected');
         } else if (selected === tile) {
           clearSelection();
         } else if (selected.dataset.side === tile.dataset.side) {
+          FLA.audio.say(ch.toLowerCase(), d.LETTER_NAMES[ch] || ch);
           clearSelection();
           selected = tile;
           tile.classList.add('is-selected');
@@ -499,9 +551,10 @@ FLA.quiz = (function () {
       destroy() {
         if (timer) clearTimeout(timer);
         done = true;
+        FLA.audio.stopSpeech();
       }
     };
   }
 
-  return { make, makeSet, render, matchBoard, praise, tryAgain };
+  return { make, makeSet, render, matchBoard, praise, tryAgain, questionSpeech };
 })();
