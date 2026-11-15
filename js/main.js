@@ -17,7 +17,7 @@ window.FLA = window.FLA || {};
       route: 'video',
       label: 'Video',
       title: 'Nonton & Belajar',
-      desc: 'Tiga video animasi dengan subtitle dan kuis kilat.',
+      desc: 'Video “Membaca Itu Seru” dengan pertanyaan di tengah video dan kuis kilat.',
       color: 'blue',
       icon: 'assets/images/om-1F3AC.svg',
       unit: 'video'
@@ -26,7 +26,7 @@ window.FLA = window.FLA || {};
       route: 'materi',
       label: 'Materi',
       title: 'Baca & Temukan',
-      desc: 'Bacaan bergambar, narasi suara, dan pertanyaan pemahaman.',
+      desc: 'Mengenal huruf, mencocokkan huruf, dan mengenal suku kata.',
       color: 'yellow',
       icon: 'assets/images/om-1F4DA.svg',
       unit: 'subbab'
@@ -35,29 +35,29 @@ window.FLA = window.FLA || {};
       route: 'game',
       label: 'Game',
       title: 'Main Sambil Belajar',
-      desc: 'Lima permainan interaktif dengan skor dan bintang.',
+      desc: 'Peta petualangan dengan tiga pos yang dibuka satu per satu.',
       color: 'green',
       icon: 'assets/images/om-1F3AE.svg',
-      unit: 'permainan'
+      unit: 'pos'
     },
     {
       route: 'evaluasi',
       label: 'Evaluasi',
       title: 'Uji Kemampuanmu',
-      desc: 'Tiga paket soal, pembahasan, dan predikat nilai.',
+      desc: 'Soal interaktif dengan umpan balik langsung setelah menjawab.',
       color: 'orange',
       icon: 'assets/images/om-1F4DD.svg',
-      unit: 'paket'
+      unit: 'evaluasi'
     }
   ];
 
   const pageTitles = {
-    beranda: 'Fun Learning Adventure — Belajar Seru untuk Anak SD',
-    video: 'Video Pembelajaran — Fun Learning Adventure',
-    materi: 'Materi Pembelajaran — Fun Learning Adventure',
-    game: 'Game Edukasi — Fun Learning Adventure',
+    beranda: 'Mengenal Huruf — Fun Learning Adventure',
+    video: 'Video Pengenalan Huruf — Fun Learning Adventure',
+    materi: 'Materi Mengenal Huruf — Fun Learning Adventure',
+    game: 'Peta Petualangan Huruf — Fun Learning Adventure',
     evaluasi: 'Evaluasi — Fun Learning Adventure',
-    progres: 'Progres Belajar — Fun Learning Adventure'
+    progres: 'Perkembangan Belajar — Fun Learning Adventure'
   };
 
   let currentPage = null;
@@ -83,15 +83,20 @@ window.FLA = window.FLA || {};
   function updateAudioUI() {
     if (!audio) return;
     const musicToggle = ui.$('#musicToggle');
+    const soundToggle = ui.$('#soundToggle');
     const musicButton = ui.$('#audioBtn');
     const volume = ui.$('#volumeRange');
     const volumeLabel = ui.$('#volumeLabel');
-    if (musicToggle) musicToggle.checked = audio.musicOn;
+    if (musicToggle) {
+      musicToggle.checked = audio.musicOn;
+      musicToggle.disabled = !audio.soundOn;
+    }
+    if (soundToggle) soundToggle.checked = audio.soundOn;
     if (musicButton) {
-      musicButton.classList.toggle('is-active', audio.musicOn);
-      musicButton.setAttribute('aria-label', audio.musicOn ? 'Matikan musik latar' : 'Nyalakan musik latar');
+      musicButton.classList.toggle('is-active', audio.soundOn);
+      musicButton.setAttribute('aria-label', audio.soundOn ? 'Suara menyala. Buka pengaturan audio' : 'Suara mati. Buka pengaturan audio');
       const use = musicButton.querySelector('use');
-      if (use) use.setAttribute('href', audio.musicOn ? '#i-music' : '#i-volume-off');
+      if (use) use.setAttribute('href', !audio.soundOn ? '#i-volume-off' : audio.musicOn ? '#i-music' : '#i-volume');
     }
     if (volume) volume.value = Math.round(audio.volume * 100);
     if (volumeLabel) volumeLabel.textContent = Math.round(audio.volume * 100) + '%';
@@ -104,10 +109,23 @@ window.FLA = window.FLA || {};
     updateAudioUI();
 
     const musicToggle = ui.$('#musicToggle');
+    const soundToggle = ui.$('#soundToggle');
     const volume = ui.$('#volumeRange');
     const audioButton = ui.$('#audioBtn');
     const panel = ui.$('#audioPanel');
     const wrap = ui.$('#audioWrap');
+
+    if (soundToggle) {
+      soundToggle.addEventListener('change', () => {
+        const on = audio.toggleSound(soundToggle.checked);
+        if (on) {
+          audio.ensure();
+          audio.sfx('pop');
+          audio.say('a', 'Suara menyala');
+        }
+        updateAudioUI();
+      });
+    }
 
     if (musicToggle) {
       musicToggle.addEventListener('change', () => {
@@ -182,42 +200,47 @@ window.FLA = window.FLA || {};
 
     container.innerHTML =
       '<div class="page-shell home-shell">' +
-        '<section class="hero">' +
+        '<section class="hero hero--huruf">' +
           '<span class="hero__cloud hero__cloud--one"></span>' +
           '<span class="hero__cloud hero__cloud--two"></span>' +
           '<span class="hero__star hero__star--one">' + ui.icon('star') + '</span>' +
           '<span class="hero__star hero__star--two">' + ui.icon('sparkles') + '</span>' +
           '<div class="hero__content">' +
             '<span class="hero__eyebrow">' + ui.icon('sparkles') + ' Media belajar interaktif untuk SD</span>' +
-            '<h1>Belajar jadi <span class="text-pop">petualangan</span> yang seru!</h1>' +
-            '<p>Hai, teman! Aku <strong>Huhu</strong>, burung hantu teman belajarmu. Yuk tonton video, baca materi, dan main game edukasi bersama!</p>' +
+            '<h1>Selamat Datang, <span class="text-pop">Mengenal Huruf</span></h1>' +
+            '<p class="hero__subtitle">Ayo belajar huruf langkah demi langkah!</p>' +
+            '<p>Hai, teman! Aku <strong>Huhu</strong>. Yuk tonton video, baca materi, main petualangan huruf, dan uji kemampuanmu.</p>' +
             '<div class="hero__actions">' +
-              '<a class="btn btn--yellow btn--lg" href="#/materi" data-menu-link>' + ui.icon('play') + ' Mulai Belajar</a>' +
-              '<a class="btn btn--glass" href="#/progres">' + ui.icon('chart') + ' Lihat Progres</a>' +
+              '<button type="button" class="btn btn--yellow btn--lg" id="startLearning">' + ui.icon('play') + ' Mulai Belajar</button>' +
+              '<button type="button" class="btn btn--glass" id="welcomeSpeak">' + ui.icon('volume') + ' Dengarkan Sambutan</button>' +
             '</div>' +
             '<div class="hero__chips">' +
-              '<span>' + ui.icon('video') + ' 3 video</span>' +
-              '<span>' + ui.icon('book') + ' 12 subbab</span>' +
-              '<span>' + ui.icon('gamepad') + ' 5 game</span>' +
+              '<span>' + ui.icon('video') + ' ' + stats.videoTotal + ' video</span>' +
+              '<span>' + ui.icon('book') + ' ' + stats.subbabTotal + ' subbab</span>' +
+              '<span>' + ui.icon('gamepad') + ' ' + stats.gameTotal + ' pos game</span>' +
             '</div>' +
           '</div>' +
           '<div class="hero__art">' +
-            '<div class="mascot-wrap">' +
-              '<div class="mascot-speech" id="mascotSpeech">' + ui.escapeHtml(welcome) + '</div>' +
-              '<button type="button" class="mascot-button" id="mascotBtn" aria-label="Sapa Huhu si burung hantu">' +
-                '<span class="mascot-halo"></span>' +
-                '<img src="' + data.site.mascotImage + '" alt="Huhu si burung hantu" width="260" height="286">' +
-              '</button>' +
-              '<span class="float-badge float-badge--star">' + ui.icon('star') + '</span>' +
-              '<span class="float-badge float-badge--book"><img src="assets/images/om-1F4DA.svg" alt="" width="34" height="34"></span>' +
-              '<span class="float-badge float-badge--puzzle"><img src="assets/images/om-1F9E9.svg" alt="" width="34" height="34"></span>' +
+            '<div class="kids-scene">' +
+              '<div class="kids-scene__tiles" role="group" aria-label="Huruf berwarna-warni. Tekan untuk mendengar">' +
+                ['A', 'B', 'C', 'D', 'E'].map((ch, i) =>
+                  '<button type="button" class="hero-tile hero-tile--' + ['blue', 'orange', 'green', 'pink', 'purple'][i] + '" data-hero-letter="' + ch + '" aria-label="Huruf ' + ch + '">' + ch + '</button>'
+                ).join('') +
+              '</div>' +
+              '<div class="mascot-wrap mascot-wrap--corner">' +
+                '<div class="mascot-speech" id="mascotSpeech">' + ui.escapeHtml(welcome) + '</div>' +
+                '<button type="button" class="mascot-button" id="mascotBtn" aria-label="Sapa Huhu si burung hantu">' +
+                  '<span class="mascot-halo"></span>' +
+                  '<img src="' + data.site.mascotImage + '" alt="Huhu si burung hantu" width="130" height="143">' +
+                '</button>' +
+              '</div>' +
             '</div>' +
           '</div>' +
         '</section>' +
         '<section class="menu-section">' +
           '<div class="section-head">' +
             '<div><span class="eyebrow">Menu Utama</span><h2>Pilih Petualanganmu</h2></div>' +
-            '<p>Empat cara seru untuk belajar hari ini.</p>' +
+            '<p>Pilih petualanganmu untuk mengenal huruf.</p>' +
           '</div>' +
           '<div class="menu-grid">' + menuCards + '</div>' +
         '</section>' +
@@ -235,10 +258,10 @@ window.FLA = window.FLA || {};
                 '<p><strong>' + stats.doneSteps + ' dari ' + stats.totalSteps + ' langkah</strong> sudah kamu selesaikan. Hebat, teruskan!</p>' +
                 '<div class="progress-track"><span style="width:' + stats.percent + '%"></span></div>' +
                 '<div class="progress-legend">' +
-                  '<span>' + ui.icon('video') + ' ' + stats.videoDone + '/3 video</span>' +
-                  '<span>' + ui.icon('book') + ' ' + stats.subbabDone + '/12 subbab</span>' +
-                  '<span>' + ui.icon('gamepad') + ' ' + stats.gameDone + '/5 game</span>' +
-                  '<span>' + ui.icon('clipboard') + ' ' + stats.evaluationDone + '/3 evaluasi</span>' +
+                  '<span>' + ui.icon('video') + ' ' + stats.videoDone + '/' + stats.videoTotal + ' video</span>' +
+                  '<span>' + ui.icon('book') + ' ' + stats.subbabDone + '/' + stats.subbabTotal + ' subbab</span>' +
+                  '<span>' + ui.icon('gamepad') + ' ' + stats.gameDone + '/' + stats.gameTotal + ' pos</span>' +
+                  '<span>' + ui.icon('clipboard') + ' ' + stats.evaluationDone + '/' + stats.evaluationTotal + ' evaluasi</span>' +
                 '</div>' +
               '</div>' +
             '</div>' +
@@ -247,7 +270,7 @@ window.FLA = window.FLA || {};
               '<div class="stat-tile stat-tile--bolt">' + ui.icon('bolt') + '<strong>' + stats.points + '</strong><span>Poin</span></div>' +
               '<div class="stat-tile stat-tile--badge">' + ui.icon('trophy') + '<strong>' + stats.badges + '/' + stats.badgeTotal + '</strong><span>Badge</span></div>' +
             '</div>' +
-            '<a class="btn btn--ghost btn--block" href="#/progres">' + ui.icon('chart') + ' Lihat Detail Progres</a>' +
+            '<a class="btn btn--ghost btn--block" href="#/progres">' + ui.icon('chart') + ' Perkembangan Belajar</a>' +
           '</div>' +
           '<div class="card badge-card">' +
             '<div class="progress-card__head">' +
@@ -280,8 +303,39 @@ window.FLA = window.FLA || {};
       '</div>';
 
     bindMascot();
+    bindHeroActions(container);
     container.querySelectorAll('[data-menu-link]').forEach((link) => {
       link.addEventListener('click', () => FLA.audio.sfx('click'));
+    });
+  }
+
+  function bindHeroActions(container) {
+    const start = ui.$('#startLearning', container);
+    if (start) {
+      start.addEventListener('click', () => {
+        FLA.audio.sfx('click');
+        FLA.audio.ensure();
+        FLA.audio.speak(data.site.welcomeSpeech);
+        const menu = ui.$('.menu-section', container);
+        if (menu) menu.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    const welcomeBtn = ui.$('#welcomeSpeak', container);
+    if (welcomeBtn) {
+      welcomeBtn.addEventListener('click', () => {
+        FLA.audio.sfx('pop');
+        FLA.audio.speak(data.site.welcomeSpeech, { notify: true });
+      });
+    }
+    ui.$$('[data-hero-letter]', container).forEach((tile) => {
+      tile.addEventListener('click', () => {
+        const info = data.letters.find((item) => item.upper === tile.dataset.heroLetter);
+        FLA.audio.sfx('select');
+        FLA.audio.say(info.lower, info.name);
+        tile.classList.remove('is-pop');
+        void tile.offsetWidth;
+        tile.classList.add('is-pop');
+      });
     });
   }
 
@@ -302,12 +356,105 @@ window.FLA = window.FLA || {};
       void button.offsetWidth;
       button.classList.add('is-wiggle');
       FLA.audio.sfx('pop');
+      FLA.audio.speak(data.site.welcome[index], { notify: true });
     });
   }
 
   /* ============================================================
      HALAMAN PROGRES
      ============================================================ */
+  /* ---------- Perkembangan per kategori (PDF halaman 7–9) ---------- */
+  let activeCategory = 'huruf';
+
+  function categoryPanel(categoryId) {
+    const cs = progress.getCategoryStats(categoryId);
+    const category = cs.category;
+    const maxCorrect = cs.items.reduce((max, item) => Math.max(max, item.correct), 0);
+    const scale = Math.max(10, maxCorrect);
+    const rows = cs.attempted;
+    const chips = (list, cls) => list.map((item) => '<span class="skill-chip ' + cls + '">' + ui.escapeHtml(item.key) + '</span>').join('');
+    const total = cs.items.length;
+
+    return '<div class="lp-stats">' +
+        '<div class="lp-stat lp-stat--star"><span>Jumlah bintang</span>' + ui.starRow(Math.min(cs.stars, cs.maxStars), cs.maxStars) + '<small>' + cs.stars + ' dari ' + cs.maxStars + ' bintang (materi + pos game)</small></div>' +
+        '<div class="lp-stat"><span>Jawaban benar</span><strong>' + cs.totalCorrect + '</strong><small>' + cs.totalWrong + ' jawaban belum tepat</small></div>' +
+        '<div class="lp-stat lp-stat--good"><span>Sudah dikuasai</span><strong>' + cs.mastered.length + '/' + total + '</strong><small>' + ui.escapeHtml(category.itemLabel.toLowerCase()) + '</small></div>' +
+        '<div class="lp-stat lp-stat--warn"><span>Perlu dilatih</span><strong>' + cs.practice.length + '</strong><small>' + cs.untouched.length + ' belum dicoba</small></div>' +
+      '</div>' +
+      '<div class="lp-chart">' +
+        '<div class="lp-chart__head"><h3>Grafik jumlah jawaban benar</h3>' +
+          '<span class="lp-legend"><i class="lp-dot lp-dot--ok"></i> benar <i class="lp-dot lp-dot--bad"></i> belum tepat</span></div>' +
+        (rows.length
+          ? '<div class="lp-axis" aria-hidden="true"><span></span><div><b>0</b><b>' + Math.round(scale / 2) + '</b><b>' + scale + '</b></div><span></span></div>' +
+            '<ul class="lp-bars">' + rows.map((item) =>
+              '<li class="lp-bar is-' + item.status + '">' +
+                '<span class="lp-bar__label">' + ui.escapeHtml(item.key) + '</span>' +
+                '<span class="lp-bar__track" role="img" aria-label="' + ui.escapeHtml(item.label) + ': ' + item.correct + ' benar, ' + item.wrong + ' belum tepat">' +
+                  '<span class="lp-bar__ok" style="width:' + Math.min(100, (item.correct / scale) * 100) + '%"></span>' +
+                  (item.wrong ? '<span class="lp-bar__bad" style="width:' + Math.min(100 - Math.min(100, (item.correct / scale) * 100), (item.wrong / scale) * 100) + '%"></span>' : '') +
+                '</span>' +
+                '<span class="lp-bar__value"><strong>' + item.correct + '</strong>' + (item.wrong ? '<small>/' + item.wrong + ' salah</small>' : '') + '</span>' +
+              '</li>').join('') + '</ul>'
+          : '<div class="empty-state">' + ui.icon('chart') + '<p>Belum ada jawaban untuk kategori ini. Kerjakan latihan di materi, game, atau evaluasi untuk melihat grafiknya.</p></div>') +
+      '</div>' +
+      '<div class="lp-skills">' +
+        '<div class="lp-skill lp-skill--good"><h3>' + ui.icon('check') + ' Materi yang sudah dikuasai</h3>' +
+          (cs.mastered.length ? '<div class="skill-chips">' + chips(cs.mastered, 'is-good') + '</div>' : '<p class="muted">Belum ada. Dikuasai bila minimal 3 jawaban benar dengan ketepatan 70% ke atas.</p>') + '</div>' +
+        '<div class="lp-skill lp-skill--warn"><h3>' + ui.icon('target') + ' Materi yang masih perlu dilatih</h3>' +
+          (cs.practice.length ? '<div class="skill-chips">' + chips(cs.practice, 'is-warn') + '</div><p class="muted">Ulangi materi dan game untuk bagian ini.</p>' : '<p class="muted">Tidak ada. Semua yang sudah dicoba sudah baik.</p>') + '</div>' +
+      '</div>';
+  }
+
+  function historyChart() {
+    const history = progress.getEvaluationHistory(10).slice().reverse();
+    if (!history.length) {
+      return '<div class="empty-state">' + ui.icon('clipboard') + '<p>Belum ada nilai evaluasi. Kerjakan evaluasi untuk melihat riwayat skor.</p></div>';
+    }
+    const best = history.reduce((max, item) => Math.max(max, item.score), 0);
+    const avg = Math.round(history.reduce((sum, item) => sum + item.score, 0) / history.length);
+    return '<div class="hist-chart" role="img" aria-label="Grafik riwayat skor evaluasi">' +
+        history.map((item, index) =>
+          '<div class="hist-col"><span class="hist-col__value">' + item.score + '</span>' +
+            '<span class="hist-col__bar" style="height:' + Math.max(4, item.score) + '%"></span>' +
+            '<span class="hist-col__label">' + (index + 1) + '</span></div>').join('') +
+      '</div>' +
+      '<p class="hist-note">Nilai tertinggi <strong>' + best + '</strong> · rata-rata <strong>' + avg + '</strong> · ' + history.length + ' percobaan terakhir (kiri = lama, kanan = terbaru)</p>' +
+      '<ul class="history-list">' + progress.getEvaluationHistory(5).map((item) =>
+        '<li><span class="history-score history-score--' + ((data.predicates.find((p) => item.score >= p.min) || {}).tone || 'sky') + '">' + item.score + '</span>' +
+        '<span class="history-main"><strong>Evaluasi Mengenal Huruf</strong><span>' + ui.formatDate(item.date) + ' · benar ' + item.correct + ' dari ' + item.total + '</span></span></li>').join('') + '</ul>';
+  }
+
+  function renderLearningProgress(host) {
+    if (!host) return;
+    host.innerHTML =
+      '<section class="card lp" aria-labelledby="lpTitle">' +
+        '<div class="section-head">' +
+          '<div><span class="eyebrow">Untuk siswa dan guru</span><h2 id="lpTitle">Perkembangan per Materi</h2></div>' +
+        '</div>' +
+        '<div class="lp-tabs" role="tablist" aria-label="Kategori perkembangan">' +
+          data.categories.map((category) =>
+            '<button type="button" role="tab" class="lp-tab lp-tab--' + category.color + (category.id === activeCategory ? ' is-active' : '') + '" data-category="' + category.id + '" aria-selected="' + (category.id === activeCategory) + '">' +
+              'Perkembangan ' + ui.escapeHtml(category.title) + '</button>'
+          ).join('') +
+        '</div>' +
+        '<div class="lp-panel" id="lpPanel" role="tabpanel">' + categoryPanel(activeCategory) + '</div>' +
+        '<div class="lp-history"><h3>Riwayat skor evaluasi</h3>' + historyChart() + '</div>' +
+      '</section>';
+
+    ui.$$('.lp-tab', host).forEach((tab) => {
+      tab.addEventListener('click', () => {
+        FLA.audio.sfx('select');
+        activeCategory = tab.dataset.category;
+        ui.$$('.lp-tab', host).forEach((other) => {
+          const active = other === tab;
+          other.classList.toggle('is-active', active);
+          other.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        ui.$('#lpPanel', host).innerHTML = categoryPanel(activeCategory);
+      });
+    });
+  }
+
   function renderProgressPage(container) {
     const stats = progress.getStats();
     const recent = progress.getRecent(8);
@@ -324,9 +471,9 @@ window.FLA = window.FLA || {};
           '<a href="#/beranda" class="back-link">' + ui.icon('arrow-left') + ' Beranda</a>' +
           '<div class="page-heading__row">' +
             '<div>' +
-              '<span class="eyebrow">Progres Belajar</span>' +
-              '<h1>Petualangan Belajarmu</h1>' +
-              '<p class="page-lead">Semua bintang, poin, dan badge tersimpan otomatis di perangkat ini.</p>' +
+              '<span class="eyebrow">Hasil dan Perkembangan Belajar</span>' +
+              '<h1>Perkembangan Belajar</h1>' +
+              '<p class="page-lead">Ringkasan untuk siswa dan guru: grafik jawaban benar, bintang, materi yang dikuasai, dan riwayat nilai evaluasi. Data tersimpan di perangkat ini.</p>' +
             '</div>' +
             '<img class="page-heading__mascot" src="assets/images/mascot-huhu.svg" alt="Huhu si burung hantu">' +
           '</div>' +
@@ -349,13 +496,14 @@ window.FLA = window.FLA || {};
             '<div class="summary-stat summary-stat--done">' + ui.icon('check') + '<strong>' + stats.doneSteps + '</strong><span>Aktivitas</span></div>' +
           '</div>' +
         '</div>' +
+        '<div id="learningProgress"></div>' +
         '<div class="progress-detail-grid">' +
           '<div class="card detail-card">' +
             '<h2>Rincian Menu</h2>' +
-            [['video', 'Video Pembelajaran', stats.videoDone, stats.videoTotal],
+            [['video', 'Video Pengenalan Huruf', stats.videoDone, stats.videoTotal],
              ['materi', 'Subbab Materi', stats.subbabDone, stats.subbabTotal],
-             ['game', 'Permainan Dimainkan', stats.gameDone, stats.gameTotal],
-             ['evaluasi', 'Paket Evaluasi', stats.evaluationDone, stats.evaluationTotal]]
+             ['game', 'Pos Petualangan Selesai', stats.gameDone, stats.gameTotal],
+             ['evaluasi', 'Evaluasi Dikerjakan', stats.evaluationDone, stats.evaluationTotal]]
               .map(([route, label, done, total]) => {
                 const percent = Math.round((done / total) * 100);
                 const iconName = route === 'video' ? 'video' : route === 'materi' ? 'book' : route === 'game' ? 'gamepad' : 'clipboard';
@@ -413,6 +561,8 @@ window.FLA = window.FLA || {};
           '<button type="button" class="btn btn--danger btn--sm" id="resetProgress">' + ui.icon('rotate') + ' Reset Progres</button>' +
         '</div>' +
       '</div>';
+
+    renderLearningProgress(ui.$('#learningProgress', container));
 
     const reset = ui.$('#resetProgress', container);
     if (reset) {
@@ -519,13 +669,13 @@ window.FLA = window.FLA || {};
       title: 'Tentang Fun Learning Adventure',
       className: 'modal-card--about',
       body:
-        '<p class="modal-text">Media pembelajaran interaktif untuk siswa Sekolah Dasar, dibuat sebagai proyek akhir semester PGSD. Website berjalan sepenuhnya di browser dan menyimpan progres di perangkatmu.</p>' +
-        '<div class="about-block"><h3>Menu belajar</h3><p>Video, materi bergambar dengan narasi, lima game edukasi, dan tiga paket evaluasi dengan pembahasan.</p></div>' +
+        '<p class="modal-text">Media pembelajaran interaktif bertema <strong>Mengenal Huruf</strong> untuk siswa Sekolah Dasar, dibuat sebagai proyek akhir semester PGSD. Website berjalan sepenuhnya di browser dan menyimpan progres di perangkatmu.</p>' +
+        '<div class="about-block"><h3>Menu belajar</h3><p>Video pengenalan huruf, tiga materi bergambar dengan suara, peta petualangan tiga pos, evaluasi interaktif, dan halaman perkembangan belajar.</p></div>' +
         '<div class="about-block"><h3>Aset &amp; lisensi</h3>' +
           '<ul class="about-list">' +
-            '<li><strong>Ikon OpenMoji</strong> — lisensi CC BY-SA 4.0, sumber openmoji.org.</li>' +
+            '<li><strong>Ikon &amp; ilustrasi</strong> — dibuat khusus bergaya Huhu (berkas <code>om-*.svg</code> hanyalah nama lama, isinya bukan lagi OpenMoji).</li>' +
             '<li><strong>Font Baloo 2 &amp; Nunito</strong> — Google Fonts, lisensi SIL Open Font License.</li>' +
-            '<li><strong>Maskot, ilustrasi, puzzle, video, dan efek suara</strong> — dibuat khusus untuk proyek ini.</li>' +
+            '<li><strong>Maskot, ilustrasi huruf, peta petualangan, dan efek suara</strong> — dibuat khusus untuk proyek ini.</li><li><strong>Pengucapan huruf</strong> — Web Speech API browser (Bahasa Indonesia) atau berkas audio sendiri.</li>' +
           '</ul>' +
         '</div>' +
         '<div class="about-block"><h3>Privasi</h3><p>Tidak ada akun dan tidak ada data yang dikirim ke server. Semua progres disimpan di LocalStorage browser ini.</p></div>',

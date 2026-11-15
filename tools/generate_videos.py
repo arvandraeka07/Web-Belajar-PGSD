@@ -17,7 +17,11 @@ from pathlib import Path
 
 import imageio_ffmpeg
 import numpy as np
-from gtts import gTTS
+
+try:                       # gTTS butuh internet; tanpa itu narasi memakai cache yang ada
+    from gtts import gTTS
+except ImportError:        # noqa: E722
+    gTTS = None
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -785,16 +789,51 @@ def visual_plant_care(base, box, theme):
 
 # ---------------- Audio ----------------
 
+def _eleven():
+    """Pengaturan ElevenLabs (suara Maya) bila ELEVENLABS_API_KEY terisi, selain itu None."""
+    if hasattr(_eleven, "cache"):
+        return _eleven.cache
+    cfg = None
+    key = os.environ.get("ELEVENLABS_API_KEY")
+    if key:
+        try:
+            import generate_elevenlabs as el  # tools/generate_elevenlabs.py
+            voice_id = os.environ.get("ELEVENLABS_VOICE_ID") or el.DEFAULT_VOICE_ID  # Maya
+            el.add_to_account(key, voice_id)
+            if voice_id:
+                cfg = (el, key, voice_id)
+            else:
+                print("  ! Suara ElevenLabs tidak ketemu; pakai gTTS. Set ELEVENLABS_VOICE_ID untuk menentukan langsung.")
+        except Exception as error:  # noqa: BLE001
+            print("  ! ElevenLabs tidak bisa dipakai, pakai gTTS:", error)
+    _eleven.cache = cfg
+    return cfg
+
+
 def tts_file(text, video_id, index):
+    # Cache ElevenLabs dipisah ("-el") supaya tidak tertukar dengan cache gTTS lama.
     digest = hashlib.md5(text.encode("utf-8")).hexdigest()[:10]
-    return TTS / f"{video_id}-{index:02d}-{digest}.mp3"
+    cfg = _eleven()
+    tag = "-el" + cfg[2][:6] if cfg else ""
+    return TTS / f"{video_id}-{index:02d}-{digest}{tag}.mp3"
 
 
 def make_tts(text, video_id, index):
     path = tts_file(text, video_id, index)
     if path.exists() and path.stat().st_size > 1000:
         return path
+    cfg = _eleven()
+    if cfg:
+        el, key, voice_id = cfg
+        try:
+            path.write_bytes(el.synth(key, voice_id, text))
+            return path
+        except SystemExit as error:
+            print("  ! ElevenLabs gagal:", text[:60], error)
+            return None
     last_error = None
+    if gTTS is None:
+        return None
     for attempt in range(4):
         try:
             gTTS(text=text, lang="id", slow=False).save(str(path))
@@ -1007,9 +1046,25 @@ def build_video(video):
 
 
 def main():
+    """Pemakaian:
+        python tools/generate_videos.py              -> membaca (animasi baru), berhitung, tumbuhan (statis)
+        python tools/generate_videos.py --statis     -> semua video lama (slide statis)
+        python tools/generate_videos.py --hanya=membaca
+    """
+    static = "--statis" in sys.argv
+    only = [a.split("=", 1)[1] for a in sys.argv if a.startswith("--hanya=")]
     durations = {}
     for video in VIDEO_DATA:
-        durations[video["id"]] = build_video(video)
+        if only and video["id"] not in only:
+            continue
+        if video["id"] == "membaca" and not static:
+            import animasi_membaca
+            import ilustrasi_huhu
+            print("\n=== Membaca Itu Seru (animasi) ===")
+            ilustrasi_huhu.build_all()
+            durations[video["id"]] = animasi_membaca.render_membaca(video)
+        else:
+            durations[video["id"]] = build_video(video)
     print("\nDurasi akhir:")
     for key, value in durations.items():
         minutes = int(value // 60)

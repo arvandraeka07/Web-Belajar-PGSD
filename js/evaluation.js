@@ -14,9 +14,7 @@ FLA.pages.evaluation = (function () {
   const data = FLA.data;
 
   const packageIcons = {
-    kelas12: 'assets/images/om-1F31E.svg',
-    kelas34: 'assets/images/om-1F9EA.svg',
-    kelas56: 'assets/images/om-1F393.svg'
+    huruf: 'assets/images/om-1F4DD.svg'
   };
 
   let root = null;
@@ -25,6 +23,7 @@ FLA.pages.evaluation = (function () {
   let currentIndex = 0;
   let answers = [];
   let finished = false;
+  let activeView = null;
 
   function getPackage(id) {
     return data.evaluations.find((item) => item.id === id);
@@ -53,7 +52,7 @@ FLA.pages.evaluation = (function () {
             '<div>' +
               '<span class="eyebrow">Menu Evaluasi</span>' +
               '<h1>Uji Kemampuanmu</h1>' +
-              '<p class="page-lead">Pilih paket sesuai kelasmu. Setiap paket berisi 10 soal pilihan ganda yang diacak.</p>' +
+              '<p class="page-lead">Jawab 10 soal interaktif tentang huruf. Setelah menjawab, kamu langsung tahu benar atau salah.</p>' +
             '</div>' +
             '<img class="page-heading__mascot" src="assets/images/mascot-huhu.svg" alt="Huhu si burung hantu">' +
           '</div>' +
@@ -66,14 +65,11 @@ FLA.pages.evaluation = (function () {
             return '<article class="eval-card eval-card--' + item.color + '">' +
               '<div class="eval-card__head">' +
                 '<span class="eval-card__icon"><img src="' + packageIcons[item.id] + '" alt="" width="58" height="58"></span>' +
-                '<span class="tag tag--' + item.color + '">' + ui.escapeHtml(item.grade) + '</span>' +
-              '</div>' +
+                              '</div>' +
               '<h2>' + ui.escapeHtml(item.title) + '</h2>' +
               '<p>' + ui.escapeHtml(item.description) + '</p>' +
               '<ul class="eval-meta">' +
-                '<li>' + ui.icon('clipboard') + ' 10 soal pilihan ganda</li>' +
-                '<li>' + ui.icon('sparkles') + ' Soal &amp; jawaban diacak</li>' +
-                '<li>' + ui.icon('book') + ' Ada pembahasan lengkap</li>' +
+                item.variations.map((v) => '<li>' + ui.icon(v.icon) + ' ' + ui.escapeHtml(v.label) + '</li>').join('') +
               '</ul>' +
               '<div class="eval-card__score">' +
                 (attempted
@@ -101,7 +97,7 @@ FLA.pages.evaluation = (function () {
                   return '<li>' +
                     '<span class="history-score history-score--' + predicate.tone + '">' + item.score + '</span>' +
                     '<span class="history-main"><strong>' + ui.escapeHtml(itemPkg ? itemPkg.title : 'Evaluasi') + '</strong>' +
-                      '<span>' + ui.formatDate(item.date) + '</span></span>' +
+                      '<span>' + ui.formatDate(item.date) + ' · benar ' + item.correct + '/' + item.total + '</span></span>' +
                     '<span class="tag tag--soft">' + ui.escapeHtml(predicate.label) + '</span>' +
                   '</li>';
                 }).join('') + '</ul>'
@@ -109,7 +105,8 @@ FLA.pages.evaluation = (function () {
           '</div>' +
           '<div class="tip-card tip-card--large">' +
             '<img src="assets/images/om-1F4A1.svg" alt="" width="52" height="52">' +
-            '<p><strong>Tips sebelum evaluasi:</strong> baca materi dan tonton video terlebih dahulu. Tidak ada batas waktu, jadi jawab dengan teliti.</p>' +
+            '<p><strong>Tips sebelum evaluasi:</strong> tonton video dan baca materi dulu. Tidak ada batas waktu, jadi dengarkan dan jawab dengan teliti.</p>' +
+            '<a class="btn btn--ghost btn--sm" href="#/progres">' + ui.icon('chart') + ' Lihat Perkembangan Belajar</a>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -129,16 +126,13 @@ FLA.pages.evaluation = (function () {
     if (!selectedPackage) return;
     pkg = selectedPackage;
 
-    questions = ui.shuffle(selectedPackage.questions).map((question) => {
-      const correctText = question.options[question.answer];
-      const options = ui.shuffle(question.options.map((text) => ({ text, correct: text === correctText })));
-      return {
-        q: question.q,
-        explanation: question.explanation,
-        options,
-        correctIndex: options.findIndex((option) => option.correct)
-      };
-    });
+    questions = FLA.quiz.makeSet(ui.shuffle(selectedPackage.plan)).map((question) => ({
+      q: question.prompt,
+      explanation: question.explanation,
+      options: question.options.map((text) => ({ text })),
+      correctIndex: question.answer,
+      source: question
+    }));
     currentIndex = 0;
     answers = [];
     finished = false;
@@ -148,37 +142,27 @@ FLA.pages.evaluation = (function () {
 
   function renderQuestion() {
     const question = questions[currentIndex];
-    const selected = answers[currentIndex] === undefined ? null : answers[currentIndex];
     const progressPercent = Math.round(((currentIndex + 1) / questions.length) * 100);
     const isLast = currentIndex === questions.length - 1;
+    if (activeView) activeView.destroy();
 
     root.innerHTML =
       '<div class="page-shell eval-exam">' +
         '<div class="exam-top">' +
           '<button type="button" class="back-link" id="exitExam">' + ui.icon('arrow-left') + ' Keluar</button>' +
           '<div class="exam-top__title">' +
-            '<span class="tag tag--' + pkg.color + '">' + ui.escapeHtml(pkg.grade) + '</span>' +
-            '<strong>' + ui.escapeHtml(pkg.title) + '</strong>' +
+                        '<strong>' + ui.escapeHtml(pkg.title) + '</strong>' +
           '</div>' +
           '<span class="exam-counter">Soal <strong>' + (currentIndex + 1) + '</strong> dari ' + questions.length + '</span>' +
         '</div>' +
         '<div class="progress-track progress-track--exam"><span style="width:' + progressPercent + '%"></span></div>' +
         '<div class="exam-card question-enter" id="examCard">' +
           '<span class="exam-number">Soal ' + (currentIndex + 1) + '</span>' +
-          '<h1>' + ui.escapeHtml(question.q) + '</h1>' +
-          '<div class="exam-options">' +
-            question.options.map((option, index) =>
-              '<button type="button" class="exam-option ' + (selected === index ? 'is-selected' : '') + '" data-option="' + index + '">' +
-                '<span class="exam-option__letter">' + String.fromCharCode(65 + index) + '</span>' +
-                '<span>' + ui.escapeHtml(option.text) + '</span>' +
-                '<span class="exam-option__check">' + ui.icon('check') + '</span>' +
-              '</button>'
-            ).join('') +
-          '</div>' +
+          '<div id="examQa"></div>' +
           '<div class="exam-actions">' +
-            '<span class="exam-hint">' + (selected === null ? 'Pilih satu jawaban.' : 'Jawaban dipilih. Kamu masih bisa menggantinya.') + '</span>' +
-            '<button type="button" class="btn btn--yellow btn--lg" id="nextQuestion" ' + (selected === null ? 'disabled' : '') + '>' +
-              (isLast ? 'Selesai &amp; Lihat Nilai' : 'Jawab &amp; Lanjut') + ' ' + ui.icon('arrow-right') +
+            '<span class="exam-hint" id="examHint">Pilih satu jawaban.</span>' +
+            '<button type="button" class="btn btn--yellow btn--lg" id="nextQuestion" disabled>' +
+              (isLast ? 'Selesai &amp; Lihat Nilai' : 'Lanjut') + ' ' + ui.icon('arrow-right') +
             '</button>' +
           '</div>' +
         '</div>' +
@@ -197,25 +181,27 @@ FLA.pages.evaluation = (function () {
         cancelLabel: 'Lanjut menjawab',
         danger: true
       });
-      if (leave) renderLobby();
+      if (leave) {
+        FLA.audio.stopSpeech();
+        renderLobby();
+      }
     });
 
-    ui.$$('.exam-option', root).forEach((button) => {
-      button.addEventListener('click', () => {
-        FLA.audio.sfx('select');
-        answers[currentIndex] = Number(button.dataset.option);
-        ui.$$('.exam-option', root).forEach((option) => option.classList.remove('is-selected'));
-        button.classList.add('is-selected');
-        const nextButton = ui.$('#nextQuestion', root);
-        if (nextButton) nextButton.disabled = false;
-        const hint = ui.$('.exam-hint', root);
-        if (hint) hint.textContent = 'Jawaban dipilih. Kamu masih bisa menggantinya.';
-      });
+    activeView = FLA.quiz.render(ui.$('#examQa', root), question.source, {
+      retry: false,
+      onAnswer: (result) => {
+        answers[currentIndex] = result.index;
+        const src = question.source;
+        if (src.cat) FLA.progress.recordItem(src.cat, src.key, result.correct);
+        ui.$('#nextQuestion', root).disabled = false;
+        ui.$('#examHint', root).textContent = result.correct ? 'Jawabanmu benar!' : 'Perhatikan jawaban yang benar, lalu lanjut.';
+      }
     });
 
     ui.$('#nextQuestion', root).addEventListener('click', () => {
       if (answers[currentIndex] === undefined) return;
       FLA.audio.sfx('click');
+      FLA.audio.stopSpeech();
       if (isLast) {
         finishEvaluation();
       } else {
@@ -252,12 +238,23 @@ FLA.pages.evaluation = (function () {
       FLA.audio.sfx('pop');
     }
 
+    FLA.audio.speak('Nilaimu ' + score + '. ' + (stars ? 'Kamu mendapat ' + stars + ' bintang!' : 'Ayo belajar lagi, ya!'));
+    const rewardBits = [];
+    if (reward.points > 0) {
+      rewardBits.push(ui.icon('bolt') + ' +' + reward.points + ' poin');
+    }
+    if (reward.stars > 0) {
+      rewardBits.push(ui.icon('star') + ' +' + reward.stars + ' bintang');
+    }
+    const rewardMarkup = rewardBits.length
+      ? rewardBits.join('<span class="reward-pill__sep"></span>')
+      : ui.icon('check') + ' Latihan selesai';
     root.innerHTML =
       '<div class="page-shell eval-result">' +
         '<div class="result-card result-card--' + predicate.tone + '">' +
           '<div class="result-hero">' +
             '<img src="assets/images/mascot-huhu.svg" alt="" width="120" height="120" class="result-hero__mascot">' +
-            '<span class="eyebrow">Hasil Evaluasi · ' + ui.escapeHtml(pkg.grade) + '</span>' +
+            '<span class="eyebrow">Hasil Evaluasi</span>' +
             '<h1>' + ui.escapeHtml(predicate.label) + '</h1>' +
             '<p>' + ui.escapeHtml(predicate.message) + '</p>' +
             '<div class="score-ring" style="--score:' + score + '">' +
@@ -265,15 +262,11 @@ FLA.pages.evaluation = (function () {
             '</div>' +
             '<div class="result-stars">' + ui.starRow(stars, 3) + '</div>' +
             '<p class="result-meta">Jawaban benar <strong>' + correct + '</strong> dari ' + total + ' soal</p>' +
-            '<div class="reward-pill">' +
-              ui.icon('bolt') + ' +' + reward.points + ' poin' +
-              '<span class="reward-pill__sep"></span>' +
-              ui.icon('star') + ' +' + reward.stars + ' bintang' +
-            '</div>' +
+            '<div class="reward-pill">' + rewardMarkup + '</div>' +
             (record.bestScore > score ? '<p class="result-note">Nilai terbaikmu tetap ' + record.bestScore + '. Terus semangat!</p>' : '') +
             '<div class="result-actions">' +
               '<button type="button" class="btn btn--yellow btn--lg" id="retryEval">' + ui.icon('rotate') + ' Ulangi Evaluasi</button>' +
-              '<button type="button" class="btn btn--ghost" id="otherEval">' + ui.icon('clipboard') + ' Paket Lain</button>' +
+              '<a class="btn btn--ghost" href="#/progres">' + ui.icon('chart') + ' Perkembangan</a>' +
               '<a class="btn btn--ghost" href="#/beranda">' + ui.icon('home') + ' Beranda</a>' +
             '</div>' +
           '</div>' +
@@ -307,10 +300,6 @@ FLA.pages.evaluation = (function () {
       FLA.audio.sfx('click');
       startEvaluation(pkg.id);
     });
-    ui.$('#otherEval', root).addEventListener('click', () => {
-      FLA.audio.sfx('click');
-      renderLobby();
-    });
     root.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -320,6 +309,9 @@ FLA.pages.evaluation = (function () {
   }
 
   function leave() {
+    if (activeView) activeView.destroy();
+    activeView = null;
+    FLA.audio.stopSpeech();
     root = null;
     pkg = null;
     finished = false;

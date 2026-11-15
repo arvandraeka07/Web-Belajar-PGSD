@@ -9,7 +9,7 @@ window.FLA = window.FLA || {};
 FLA.progress = (function () {
   'use strict';
 
-  const STORAGE_KEY = 'fla_progress_v1';
+  const STORAGE_KEY = 'fla_huruf_progress_v1';
   const VERSION = 1;
 
   const ui = window.FLA.ui;
@@ -24,6 +24,7 @@ FLA.progress = (function () {
       materials: {},
       games: {},
       evaluations: {},
+      items: {},
       recent: []
     };
   }
@@ -45,6 +46,7 @@ FLA.progress = (function () {
           ...base,
           ...parsed,
           badges: Array.isArray(parsed.badges) ? parsed.badges : [],
+          items: parsed.items && typeof parsed.items === 'object' ? parsed.items : {},
           recent: Array.isArray(parsed.recent) ? parsed.recent : []
         };
       } catch (error) {
@@ -198,8 +200,22 @@ FLA.progress = (function () {
       return { points, stars: newStars, isNewBest, bestScore: this.state.games[id].bestScore };
     }
 
+    /* Pos dianggap selesai bila mendapat minimal 1 bintang. */
+    isGameDone(id) {
+      const record = this.state.games[id];
+      return Boolean(record && (record.stars || 0) >= 1);
+    }
+
     playedGameCount() {
-      return Object.keys(this.state.games).length;
+      return Object.keys(this.state.games).filter((id) => this.isGameDone(id)).length;
+    }
+
+    /* Pos 1 selalu terbuka; pos berikutnya terbuka setelah pos sebelumnya selesai. */
+    isPosUnlocked(id) {
+      const list = window.FLA.data.adventure;
+      const index = list.findIndex((pos) => pos.id === id);
+      if (index <= 0) return index === 0;
+      return this.isGameDone(list[index - 1].id);
     }
 
     /* ---------- Evaluasi ---------- */
@@ -258,6 +274,61 @@ FLA.progress = (function () {
       return all.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, limit || 5);
     }
 
+    /* ---------- Catatan per huruf / pasangan / vokal ----------
+       Setiap jawaban disimpan per kategori ('huruf', 'cocok', 'suku')
+       dan per kunci (A, A-a, I, dst.) agar guru bisa melihat grafiknya. */
+
+    recordItem(category, key, correct) {
+      if (!category || !key) return;
+      const id = category + ':' + key;
+      const record = this.state.items[id] || { c: 0, w: 0 };
+      if (correct) record.c += 1;
+      else record.w += 1;
+      record.last = new Date().toISOString();
+      this.state.items[id] = record;
+      this.save();
+    }
+
+    getItem(category, key) {
+      return this.state.items[category + ':' + key] || { c: 0, w: 0 };
+    }
+
+    /* Dikuasai: minimal 3 jawaban benar dan ketepatan >= 70%. */
+    getItemStatus(category, key) {
+      const item = this.getItem(category, key);
+      const total = item.c + item.w;
+      if (!total) return 'new';
+      return item.c >= 3 && item.c / total >= 0.7 ? 'mastered' : 'practice';
+    }
+
+    getCategoryStats(categoryId) {
+      const category = window.FLA.data.categories.find((entry) => entry.id === categoryId);
+      if (!category) return null;
+      const items = category.keys.map((key) => {
+        const item = this.getItem(category.id, key);
+        return { key, label: category.keyLabel(key), correct: item.c, wrong: item.w, status: this.getItemStatus(category.id, key) };
+      });
+      const attempted = items.filter((item) => item.status !== 'new');
+      const material = this.state.materials[category.material];
+      const gameRecord = this.state.games[category.pos];
+      const materialStars = material && material.completed ? 2 : 0;
+      const gameStars = gameRecord ? Math.min(3, gameRecord.stars || 0) : 0;
+      const totalCorrect = items.reduce((sum, item) => sum + item.correct, 0);
+      const totalWrong = items.reduce((sum, item) => sum + item.wrong, 0);
+      return {
+        category,
+        items,
+        attempted,
+        mastered: items.filter((item) => item.status === 'mastered'),
+        practice: items.filter((item) => item.status === 'practice'),
+        untouched: items.filter((item) => item.status === 'new'),
+        stars: materialStars + gameStars,
+        maxStars: 5,
+        totalCorrect,
+        totalWrong
+      };
+    }
+
     /* ---------- Statistik ---------- */
 
     getStats() {
@@ -265,7 +336,7 @@ FLA.progress = (function () {
       const videoDone = this.completedVideoCount();
       const gameDone = this.playedGameCount();
       const evaluationDone = this.evaluatedPackageCount();
-      const totalSteps = 3 + 12 + 5 + 3;
+      const totalSteps = 1 + 10 + 3 + 1;
       const doneSteps = videoDone + subbabDone + gameDone + evaluationDone;
       return {
         points: this.state.points,
@@ -273,13 +344,13 @@ FLA.progress = (function () {
         badges: this.state.badges.length,
         badgeTotal: window.FLA.data.badges.length,
         subbabDone,
-        subbabTotal: 12,
+        subbabTotal: 10,
         videoDone,
-        videoTotal: 3,
+        videoTotal: 1,
         gameDone,
-        gameTotal: 5,
+        gameTotal: 3,
         evaluationDone,
-        evaluationTotal: 3,
+        evaluationTotal: 1,
         materialDone: this.completedMaterialCount(),
         doneSteps,
         totalSteps,
@@ -318,9 +389,9 @@ FLA.progress = (function () {
       if (this.state.recent.length >= 1) add('first-step');
       if (this.state.stars >= 1) add('first-star');
       if (this.state.stars >= 10) add('star-10');
-      if (stats.videoDone >= 2) add('video-2');
+      if (stats.videoDone >= 1) add('video-1');
       if (stats.materialDone >= 1) add('materi-1');
-      if (stats.gameDone >= 3) add('game-3');
+      if (stats.gameDone >= 3) add('pos-3');
       if (Object.keys(this.state.evaluations).some((id) => this.state.evaluations[id].bestScore === 100)) add('perfect');
       if (this.state.points >= 300) add('point-300');
 

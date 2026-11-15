@@ -1,7 +1,13 @@
 /* ============================================================
-   FUN LEARNING ADVENTURE — Data Konten
-   Semua materi, soal, game, dan badge dikumpulkan di sini agar
-   mudah diperbarui tanpa mengubah logika aplikasi.
+   FUN LEARNING ADVENTURE — Data Konten "Mengenal Huruf"
+   Semua materi, bank huruf, gambar, dan konfigurasi pembelajaran
+   dikumpulkan di sini agar mudah diperbarui tanpa mengubah logika.
+
+   Sumber isi: PDF "Halaman Awal Web Huruf" (halaman 1–9).
+   - Video interaktif "Membaca Itu Seru" (vokal, suku kata, kalimat)
+   - 3 materi: Mengenal & Membedakan Huruf, Mencocokkan Huruf dengan
+     Bentuknya, Mengenal Suku Kata
+   - Game petualangan 3 pos, evaluasi, dan perkembangan belajar
    ============================================================ */
 
 window.FLA = window.FLA || {};
@@ -11,571 +17,451 @@ FLA.data = (function () {
 
   const IMG = 'assets/images/';
 
-  /* ---------- Bank gambar (OpenMoji, CC BY-SA 4.0) ---------- */
-  const items = [
-    { id: 'apel',        name: 'Apel',          file: IMG + 'om-1F34E.svg' },
-    { id: 'kucing',      name: 'Kucing',        file: IMG + 'om-1F408.svg' },
-    { id: 'ikan',        name: 'Ikan',          file: IMG + 'om-1F41F.svg' },
-    { id: 'sepeda',      name: 'Sepeda',        file: IMG + 'om-1F6B2.svg' },
-    { id: 'bulan',       name: 'Bulan',         file: IMG + 'om-1F319.svg' },
-    { id: 'pohon',       name: 'Pohon',         file: IMG + 'om-1F333.svg' },
-    { id: 'matahari',    name: 'Matahari',      file: IMG + 'om-2600.svg' },
-    { id: 'buku',        name: 'Buku',          file: IMG + 'om-1F4D5.svg' },
-    { id: 'pensil',      name: 'Pensil',        file: IMG + 'om-270F.svg' },
-    { id: 'stroberi',    name: 'Stroberi',      file: IMG + 'om-1F353.svg' },
-    { id: 'kupukupu',    name: 'Kupu-kupu',     file: IMG + 'om-1F98B.svg' },
-    { id: 'gajah',       name: 'Gajah',         file: IMG + 'om-1F418.svg' },
-    { id: 'roket',       name: 'Roket',         file: IMG + 'om-1F680.svg' },
-    { id: 'bungamatahari', name: 'Bunga Matahari', file: IMG + 'om-1F33B.svg' },
-    { id: 'pisang',      name: 'Pisang',        file: IMG + 'om-1F34C.svg' },
-    { id: 'mobil',       name: 'Mobil',         file: IMG + 'om-1F697.svg' },
-    { id: 'jam',         name: 'Jam',           file: IMG + 'om-1F550.svg' },
-    { id: 'bola',        name: 'Bola',          file: IMG + 'om-26BD.svg' },
-    { id: 'pelangi',     name: 'Pelangi',       file: IMG + 'om-1F308.svg' },
-    { id: 'bintang',     name: 'Bintang',       file: IMG + 'om-1F31F.svg' }
+  /* ---------- Alfabet A–Z ----------
+     name = nama huruf dalam Bahasa Indonesia (PUEBI), dipakai untuk
+     tampilan "dibaca ..." dan untuk pengucapan suara. */
+  const LETTER_NAMES = {
+    A: 'a', B: 'be', C: 'ce', D: 'de', E: 'e', F: 'ef', G: 'ge', H: 'ha', I: 'i',
+    J: 'je', K: 'ka', L: 'el', M: 'em', N: 'en', O: 'o', P: 'pe', Q: 'ki', R: 'er',
+    S: 'es', T: 'te', U: 'u', V: 've', W: 'we', X: 'eks', Y: 'ye', Z: 'zet'
+  };
+  const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const letters = ALPHABET.map((upper) => ({
+    upper,
+    lower: upper.toLowerCase(),
+    name: LETTER_NAMES[upper]
+  }));
+
+  const VOWELS = ['A', 'I', 'U', 'E', 'O'];
+  const CONSONANTS = ALPHABET.filter((ch) => VOWELS.indexOf(ch) === -1);
+  /* Konsonan yang dipakai untuk suku kata sederhana (konsonan + vokal) */
+  const SYLLABLE_CONSONANTS = ['B', 'D', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T'];
+
+  /* Huruf yang bentuknya mirip — dipakai sebagai pengecoh yang wajar */
+  const LOOKALIKE = {
+    a: ['o', 'e'], b: ['d', 'p'], c: ['e', 'o'], d: ['b', 'q'], e: ['c', 'a'], f: ['t', 'l'],
+    g: ['q', 'y'], h: ['n', 'b'], i: ['l', 'j'], j: ['i', 'l'], k: ['h', 'x'], l: ['i', 't'],
+    m: ['n', 'w'], n: ['m', 'u'], o: ['c', 'a'], p: ['q', 'b'], q: ['p', 'g'], r: ['n', 'v'],
+    s: ['z', 'c'], t: ['f', 'l'], u: ['n', 'v'], v: ['u', 'w'], w: ['m', 'v'], x: ['k', 'z'],
+    y: ['g', 'v'], z: ['s', 'x']
+  };
+
+  /* ---------- Bank gambar: huruf awal sebuah benda ---------- */
+  const pictures = [
+    { letter: 'A', word: 'Apel',     file: IMG + 'om-1F34E.svg' },
+    { letter: 'B', word: 'Bola',     file: IMG + 'om-26BD.svg' },
+    { letter: 'D', word: 'Daun',     file: IMG + 'om-1F343.svg' },
+    { letter: 'E', word: 'Ember',    file: IMG + 'ill-ember.svg' },
+    { letter: 'G', word: 'Gajah',    file: IMG + 'om-1F418.svg' },
+    { letter: 'I', word: 'Ikan',     file: IMG + 'om-1F41F.svg' },
+    { letter: 'J', word: 'Jam',      file: IMG + 'om-1F550.svg' },
+    { letter: 'K', word: 'Kucing',   file: IMG + 'om-1F408.svg' },
+    { letter: 'L', word: 'Lampu',    file: IMG + 'om-1F4A1.svg' },
+    { letter: 'M', word: 'Matahari', file: IMG + 'om-2600.svg' },
+    { letter: 'O', word: 'Otak',     file: IMG + 'om-1F9E0.svg' },
+    { letter: 'P', word: 'Pisang',   file: IMG + 'om-1F34C.svg' },
+    { letter: 'R', word: 'Roket',    file: IMG + 'om-1F680.svg' },
+    { letter: 'S', word: 'Sepeda',   file: IMG + 'om-1F6B2.svg' },
+    { letter: 'U', word: 'Ular',     file: IMG + 'ill-ular.svg' }
   ];
 
-  /* ============================================================
-     A. VIDEO PEMBELAJARAN
-     ============================================================ */
-  const videos = [
+  /* ---------- Kata berawalan huruf vokal (untuk materi suku kata) ---------- */
+  const vowelWords = [
+    { vowel: 'A', word: 'Apel',  syllables: ['a', 'pel'],  file: IMG + 'om-1F34E.svg' },
+    { vowel: 'I', word: 'Ikan',  syllables: ['i', 'kan'],  file: IMG + 'om-1F41F.svg' },
+    { vowel: 'U', word: 'Ular',  syllables: ['u', 'lar'],  file: IMG + 'ill-ular.svg' },
+    { vowel: 'E', word: 'Ember', syllables: ['em', 'ber'], file: IMG + 'ill-ember.svg' },
+    { vowel: 'O', word: 'Otak',  syllables: ['o', 'tak'],  file: IMG + 'om-1F9E0.svg' }
+  ];
+
+  /* Tiga kategori perkembangan belajar (PDF halaman 7–9) */
+  const categories = [
     {
-      id: 'membaca',
-      title: 'Membaca Itu Seru',
-      subject: 'Bahasa Indonesia',
-      grade: 'Kelas 1–2',
-      duration: '0:58',
-      src: 'assets/videos/membaca.mp4',
-      poster: 'assets/images/poster-membaca.jpg',
-      subtitle: 'assets/videos/membaca.vtt',
-      color: 'blue',
-      description: 'Kenali huruf vokal, suku kata, dan membaca kalimat sederhana bersama Huhu si burung hantu.',
-      quiz: [
-        { q: 'Huruf vokal ada berapa?', options: ['3', '4', '5', '6'], answer: 2, explanation: 'Huruf vokal ada lima: a, i, u, e, o.' },
-        { q: 'Kata "buku" terdiri dari ... suku kata.', options: ['1', '2', '3', '4'], answer: 1, explanation: 'Bu-ku terdiri dari dua suku kata.' },
-        { q: 'Kalimat sebaiknya dimulai dengan huruf ...', options: ['kecil', 'kapital', 'angka', 'simbol'], answer: 1, explanation: 'Kalimat dimulai dengan huruf kapital dan diakhiri tanda baca.' }
-      ]
+      id: 'huruf', title: 'Mengenal Huruf', short: 'Mengenal Huruf',
+      itemLabel: 'Huruf', color: 'blue', material: 'huruf', pos: 'pos1',
+      keys: ALPHABET,
+      keyLabel: (key) => 'Huruf ' + key
     },
     {
-      id: 'berhitung',
-      title: 'Berhitung Ceria',
-      subject: 'Matematika',
-      grade: 'Kelas 3–4',
-      duration: '1:00',
-      src: 'assets/videos/berhitung.mp4',
-      poster: 'assets/images/poster-berhitung.jpg',
-      subtitle: 'assets/videos/berhitung.vtt',
-      color: 'yellow',
-      description: 'Belajar penjumlahan, pengurangan, dan perkalian dengan contoh yang mudah dipahami.',
-      quiz: [
-        { q: '125 + 40 = ...', options: ['155', '160', '165', '175'], answer: 2, explanation: '125 + 40 = 165.' },
-        { q: '3 × 4 = ...', options: ['7', '9', '12', '15'], answer: 2, explanation: '3 × 4 sama dengan 4 + 4 + 4 = 12.' },
-        { q: '90 − 25 = ...', options: ['55', '60', '65', '75'], answer: 2, explanation: '90 − 25 = 65.' }
-      ]
+      id: 'cocok', title: 'Mencocokkan Huruf', short: 'Mencocokkan Huruf',
+      itemLabel: 'Pasangan', color: 'green', material: 'cocok', pos: 'pos2',
+      keys: ALPHABET.map((ch) => ch + '-' + ch.toLowerCase()),
+      keyLabel: (key) => key
     },
     {
-      id: 'tumbuhan',
-      title: 'Dunia Tumbuhan',
-      subject: 'IPA',
-      grade: 'Kelas 4–6',
-      duration: '0:58',
-      src: 'assets/videos/tumbuhan.mp4',
-      poster: 'assets/images/poster-tumbuhan.jpg',
-      subtitle: 'assets/videos/tumbuhan.vtt',
-      color: 'green',
-      description: 'Mengenal bagian tumbuhan, fotosintesis, dan cara menjaga tumbuhan di sekitar kita.',
-      quiz: [
-        { q: 'Bagian tumbuhan yang menyerap air dari tanah adalah ...', options: ['akar', 'batang', 'daun', 'bunga'], answer: 0, explanation: 'Akar menyerap air dan zat hara dari dalam tanah.' },
-        { q: 'Gas yang dihasilkan tumbuhan saat fotosintesis adalah ...', options: ['karbondioksida', 'nitrogen', 'oksigen', 'hidrogen'], answer: 2, explanation: 'Fotosintesis menghasilkan oksigen yang kita hirup.' },
-        { q: 'Tumbuhan membutuhkan ... untuk membuat makanan.', options: ['cahaya matahari', 'televisi', 'batu', 'plastik'], answer: 0, explanation: 'Cahaya matahari membantu daun memasak makanan.' }
-      ]
+      id: 'suku', title: 'Mengenal Suku Kata', short: 'Mengenal Suku Kata',
+      itemLabel: 'Huruf vokal', color: 'orange', material: 'suku', pos: 'pos3',
+      keys: VOWELS,
+      keyLabel: (key) => 'Huruf ' + key
     }
   ];
 
   /* ============================================================
-     B. MATERI PEMBELAJARAN
-     Ringkasan otomatis ditampilkan pada langkah terakhir.
+     A. VIDEO PENGENALAN HURUF — "Membaca Itu Seru"
+     src         : berkas video (assets/videos/membaca.mp4)
+     vtt         : subtitle & transkrip (WebVTT)
+     chapters    : bab video (detik mulai) — tampil di daftar bab dan bilah geser
+     checkpoints : video berhenti di detik `at`, anak menjawab dulu lalu lanjut.
+                   `from` = detik awal bagian yang boleh diulang jika belum paham.
+     keywords    : kartu kosakata yang bisa diketuk untuk mendengar bunyinya
+     quizTypes   : jenis soal Kuis Kilat setelah video selesai (lihat quiz.js)
      ============================================================ */
+  const ANIM = IMG + 'anim/';
+  const videos = [
+    {
+      id: 'pengenalan-huruf',
+      title: 'Video Pengenalan Huruf',
+      subtitle: 'Membaca Itu Seru',
+      subject: 'Mengenal Huruf',
+      duration: '5 menit',
+      src: 'assets/videos/membaca.mp4',
+      vtt: 'assets/videos/membaca.vtt',
+      poster: IMG + 'poster-membaca.jpg',
+      color: 'blue',
+      description: 'Bersama Huhu, kenali huruf vokal, gabungkan suku kata, tulis kalimat, dan biasakan membaca setiap hari. Video berhenti sebentar untuk menanyakan pertanyaan seru!',
+      chapters: [
+        { at: 0,   title: 'Halo dari Huhu',      note: 'Perkenalan dan tujuan belajar' },
+        { at: 16,  title: 'Huruf Vokal',         note: 'a, i, u, e, o dan gambarnya' },
+        { at: 85,  title: 'Suku Kata',           note: 'Menggabungkan bunyi: bu + ku' },
+        { at: 140, title: 'Menulis Kalimat',     note: 'Huruf kapital dan tanda titik' },
+        { at: 180, title: 'Kebiasaan Membaca',   note: 'Tiga kebiasaan pembaca cerdas' },
+        { at: 223, title: 'Kuis Seru',           note: 'Tiga pertanyaan bersama Huhu' }
+      ],
+      checkpoints: [
+        {
+          at: 84.2, from: 16, title: 'Cek huruf vokal',
+          q: 'Manakah yang termasuk huruf vokal?',
+          options: ['a, i, u, e, o', 'b, c, d, f, g', 'k, l, m, n, p'], answer: 0,
+          explanation: 'Huruf vokal ada lima: a, i, u, e, o.',
+          hint: 'Ingat apel, ikan, ular, ember, obat. Huruf awalnya adalah huruf vokal.'
+        },
+        {
+          at: 135.2, from: 85, title: 'Cek suku kata',
+          q: 'Kata meja terdiri dari suku kata apa saja?',
+          options: ['me dan ja', 'mej dan a', 'm dan eja'], answer: 0,
+          explanation: 'me + ja dibaca meja.',
+          hint: 'Bagi kata meja menjadi dua potongan bunyi: me... ja...'
+        },
+        {
+          at: 178.8, from: 140, title: 'Cek menulis kalimat',
+          q: 'Kalimat diakhiri dengan apa?',
+          options: ['huruf kapital', 'tanda titik', 'angka satu'], answer: 1,
+          explanation: 'Akhir kalimat memakai tanda titik (.).',
+          hint: 'Lihat kalimat "Budi membaca buku." Apa yang ada di ujungnya?'
+        },
+        {
+          at: 221.5, from: 180, title: 'Cek kebiasaan membaca',
+          q: 'Berapa menit sebaiknya kita membaca setiap hari?',
+          options: ['10 menit', '1 menit', '3 jam'], answer: 0,
+          explanation: 'Luangkan sepuluh menit setiap hari. Sedikit demi sedikit, kamu jadi lancar!',
+          hint: 'Huhu bilang: "Luangkan ... menit setiap hari."'
+        }
+      ],
+      keywords: {
+        vowels: [
+          { letter: 'a', word: 'apel',  img: ANIM + 'ill-apel.svg' },
+          { letter: 'i', word: 'ikan',  img: ANIM + 'ill-ikan.svg' },
+          { letter: 'u', word: 'ular',  img: ANIM + 'ill-ular.svg' },
+          { letter: 'e', word: 'ember', img: ANIM + 'ill-ember.svg' },
+          { letter: 'o', word: 'obat',  img: ANIM + 'ill-obat.svg' }
+        ],
+        syllables: [
+          { parts: ['bu', 'ku'], word: 'buku', img: ANIM + 'ill-buku.svg' },
+          { parts: ['bo', 'la'], word: 'bola', img: ANIM + 'ill-bola.svg' },
+          { parts: ['me', 'ja'], word: 'meja', img: ANIM + 'ill-meja.svg' },
+          { parts: ['sa', 'pi'], word: 'sapi', img: ANIM + 'ill-sapi.svg' }
+        ]
+      },
+      quizTypes: ['vowel', 'syllable', 'syllableSound']
+    }
+  ];
+
+  /* ============================================================
+     B. MATERI — tiga submateri sesuai PDF
+     kind  : jenis tampilan isi subbab (diproses di material.js)
+     check : jenis soal "Cek Pemahaman" (dibuat di quiz.js) atau
+             'fixed' + question untuk soal tetap.
+     ============================================================ */
+  const firstHalf = ALPHABET.slice(0, 13);
+  const secondHalf = ALPHABET.slice(13);
+
   const materials = [
     {
-      id: 'membaca',
-      title: 'Membaca Itu Seru',
-      subject: 'Bahasa Indonesia',
-      grade: 'Kelas 1–2',
+      id: 'huruf',
+      category: 'huruf',
+      title: 'Mengenal dan Membedakan Huruf',
+      subject: 'Materi 1',
       color: 'blue',
-      illustration: 'assets/images/illustration-membaca.svg',
-      icon: IMG + 'om-1F4DA.svg',
-      blurb: 'Mengenal huruf vokal, suku kata, menyusun kata, dan membaca kalimat.',
+      illustration: IMG + 'illustration-huruf.svg',
+      icon: IMG + 'om-1F4D5.svg',
+      blurb: 'Kenali huruf alfabet A sampai Z, bentuk huruf kapital dan huruf kecil, serta cara menyebutnya.',
+      subbabs: [
+        {
+          title: 'Mengenal Huruf Alfabet',
+          icon: IMG + 'om-1F4DA.svg',
+          visual: 'A B C D E ...',
+          kind: 'text',
+          paragraphs: [
+            'Alfabet adalah kumpulan huruf yang kita pakai untuk menulis dan membaca. Alfabet Bahasa Indonesia terdiri dari 26 huruf, dari A sampai Z.',
+            'Setiap huruf punya nama dan bunyi. Dengarkan guru atau tekan tombol suara, lalu tirukan ya!'
+          ],
+          funFact: 'Urutan alfabet selalu sama: A, B, C, D, E, F, G, dan seterusnya sampai Z.',
+          sample: ['A', 'B', 'C', 'D', 'E'],
+          check: 'fixed',
+          question: {
+            q: 'Ada berapa huruf dalam alfabet?',
+            options: ['24', '26', '28'],
+            answer: 1,
+            explanation: 'Alfabet Bahasa Indonesia terdiri dari 26 huruf, yaitu A sampai Z.'
+          }
+        },
+        {
+          title: 'Kartu Huruf A sampai M',
+          icon: IMG + 'om-1F4D3.svg',
+          visual: 'A – M',
+          kind: 'cards',
+          letters: firstHalf,
+          paragraphs: ['Tekan kartu huruf untuk melihat huruf kapital, huruf kecil, dan mendengar cara menyebutnya.'],
+          funFact: 'Huruf A, I, U, E, O disebut huruf vokal. Huruf lainnya disebut huruf konsonan.',
+          check: 'sound',
+          pool: firstHalf
+        },
+        {
+          title: 'Kartu Huruf N sampai Z',
+          icon: IMG + 'om-1F4D3.svg',
+          visual: 'N – Z',
+          kind: 'cards',
+          letters: secondHalf,
+          paragraphs: ['Lanjutkan dengan huruf N sampai Z. Tekan kartunya, lihat bentuknya, lalu dengarkan namanya.'],
+          funFact: 'Huruf terakhir dalam alfabet adalah Z, dibaca "zet".',
+          check: 'sound',
+          pool: secondHalf
+        },
+        {
+          title: 'Membedakan Huruf yang Mirip',
+          icon: IMG + 'om-1F9E9.svg',
+          visual: 'b d p q',
+          kind: 'similar',
+          paragraphs: [
+            'Ada huruf yang bentuknya hampir sama, jadi perlu diperhatikan dengan teliti. Lihat pasangan di bawah ini.',
+            'Perhatikan arah lengkungannya. Huruf b dan d berbeda, begitu juga p dan q.'
+          ],
+          similar: [
+            { pair: ['b', 'd'], tip: 'b: tongkat di kiri, perut di kanan. d: perut di kiri, tongkat di kanan.' },
+            { pair: ['p', 'q'], tip: 'p: tongkat turun di kiri, perut di kanan. q: perut di kiri, tongkat turun di kanan.' },
+            { pair: ['m', 'n'], tip: 'm punya tiga garis tegak, n hanya punya dua garis tegak.' }
+          ],
+          funFact: 'Berlatih menulis huruf dengan jari di udara membantu kita mengingat bentuknya.',
+          check: 'capitalLook',
+          pool: ['B', 'D', 'P', 'Q', 'M', 'N']
+        }
+      ],
+      summary: [
+        'Alfabet terdiri dari 26 huruf, yaitu A sampai Z.',
+        'Setiap huruf punya bentuk kapital (besar) dan bentuk kecil.',
+        'Setiap huruf punya nama, misalnya B dibaca "be" dan Z dibaca "zet".',
+        'Huruf yang mirip, seperti b dan d, harus diperhatikan dengan teliti.'
+      ]
+    },
+    {
+      id: 'cocok',
+      category: 'cocok',
+      title: 'Mencocokkan Huruf dengan Bentuknya',
+      subject: 'Materi 2',
+      color: 'green',
+      illustration: IMG + 'illustration-cocok.svg',
+      icon: IMG + 'om-1F3AF.svg',
+      blurb: 'Pasangkan huruf kapital dengan huruf kecil: A-a, B-b, C-c, D-d, dan seterusnya.',
+      subbabs: [
+        {
+          title: 'Pasangan Huruf A–a sampai M–m',
+          icon: IMG + 'om-1F4D5.svg',
+          visual: 'A-a  B-b',
+          kind: 'pairs',
+          letters: firstHalf,
+          paragraphs: [
+            'Setiap huruf punya dua bentuk, yaitu huruf kapital dan huruf kecil. Keduanya adalah huruf yang sama, hanya bentuknya berbeda.',
+            'Contoh: A dan a, B dan b, C dan c. Tekan pasangan huruf untuk mendengarnya.'
+          ],
+          funFact: 'Huruf kapital dipakai di awal kalimat dan di awal nama orang.',
+          check: 'lower',
+          pool: firstHalf
+        },
+        {
+          title: 'Pasangan Huruf N–n sampai Z–z',
+          icon: IMG + 'om-1F4D5.svg',
+          visual: 'N-n  Z-z',
+          kind: 'pairs',
+          letters: secondHalf,
+          paragraphs: [
+            'Lanjutkan mengenal pasangan huruf N-n sampai Z-z.',
+            'Beberapa pasangan bentuknya mirip, hanya ukurannya berbeda, misalnya O-o, S-s, V-v, W-w, dan Z-z.'
+          ],
+          funFact: 'Pasangan seperti A-a dan B-b bentuknya berbeda, jadi harus dihafalkan pelan-pelan.',
+          check: 'upper',
+          pool: secondHalf
+        },
+        {
+          title: 'Ayo Pasangkan Huruf',
+          icon: IMG + 'om-1F9E9.svg',
+          visual: 'A ↔ a',
+          kind: 'matchBoard',
+          boardSize: 4,
+          paragraphs: [
+            'Sekarang giliranmu! Pasangkan huruf kapital dengan huruf kecil yang sama.',
+            'Tekan satu huruf kapital, lalu tekan huruf kecil pasangannya. Di komputer kamu juga boleh menyeret hurufnya.'
+          ],
+          funFact: 'Semua pasangan benar berarti kamu sudah paham huruf kapital dan huruf kecil.',
+          check: 'board'
+        }
+      ],
+      summary: [
+        'Setiap huruf punya pasangan: huruf kapital dan huruf kecil.',
+        'Contoh pasangan huruf: A-a, B-b, C-c, D-d, dan seterusnya sampai Z-z.',
+        'Huruf kapital dipakai di awal kalimat dan di awal nama orang.',
+        'Memasangkan huruf membuat kita cepat mengenali bentuknya.'
+      ]
+    },
+    {
+      id: 'suku',
+      category: 'suku',
+      title: 'Mengenal Suku Kata',
+      subject: 'Materi 3',
+      color: 'orange',
+      illustration: IMG + 'illustration-suku.svg',
+      icon: IMG + 'om-1F4DD.svg',
+      blurb: 'Kenali huruf vokal A, I, U, E, O dan bunyi suku kata sederhana seperti ba, bi, bu, be, bo.',
       subbabs: [
         {
           title: 'Mengenal Huruf Vokal',
           icon: IMG + 'om-1F4D5.svg',
-          visual: 'a · i · u · e · o',
+          visual: 'A I U E O',
+          kind: 'vowels',
           paragraphs: [
-            'Huruf vokal adalah huruf yang bunyinya keluar dengan bebas. Ada lima huruf vokal, yaitu a, i, u, e, dan o.',
-            'Coba ucapkan perlahan: a… i… u… e… o. Bagus! Setiap huruf vokal memiliki bunyi yang berbeda. Huruf vokal membuat kata menjadi mudah diucapkan.'
+            'Huruf vokal ada lima, yaitu A, I, U, E, dan O. Bunyinya keluar dengan lancar dari mulut kita.',
+            'Tekan huruf vokal, lihat gambarnya, lalu ucapkan bersama-sama.'
           ],
-          funFact: 'Huruf vokal disebut juga huruf hidup karena bisa dibunyikan sendiri.',
-          question: {
-            q: 'Mana yang termasuk huruf vokal?',
-            options: ['b', 'a', 'k', 'm'],
-            answer: 1,
-            explanation: 'Huruf a adalah huruf vokal. Huruf b, k, dan m adalah huruf konsonan.'
-          }
+          funFact: 'Hampir semua suku kata mengandung huruf vokal.',
+          check: 'vowel'
         },
         {
-          title: 'Membaca Suku Kata',
+          title: 'Suku Kata Sederhana',
           icon: IMG + 'om-1F9E9.svg',
-          visual: 'bu · ku',
+          visual: 'b + a = ba',
+          kind: 'syllables',
           paragraphs: [
-            'Suku kata adalah potongan bunyi dalam sebuah kata. Kata "buku" terdiri dari dua suku kata, yaitu bu dan ku.',
-            'Kita bisa menggabungkan huruf konsonan dan vokal. Contohnya b + a = ba, lalu bi, bu, be, bo. Ayo berlatih membaca suku kata dengan suara nyaring!'
+            'Suku kata dibuat dari huruf konsonan dan huruf vokal. Contohnya b + a dibaca ba.',
+            'Pilih satu huruf konsonan, lalu tekan suku katanya untuk mendengar bunyinya.'
           ],
-          funFact: 'Tepuk tanganmu setiap suku kata. Kata "bola" mendapat dua tepukan: bo-la.',
-          question: {
-            q: 'Kata "bola" terdiri dari berapa suku kata?',
-            options: ['1', '2', '3', '4'],
-            answer: 1,
-            explanation: 'Bo-la terdiri dari dua suku kata.'
-          }
+          funFact: 'Dengan satu konsonan, kita bisa membuat lima suku kata: ba, bi, bu, be, bo.',
+          check: 'syllable'
         },
         {
-          title: 'Menyusun Kata',
-          icon: IMG + 'om-270F.svg',
-          visual: 'b + u + k + u = buku',
-          paragraphs: [
-            'Kata dibentuk dari huruf-huruf yang disusun dengan urutan yang benar. Jika huruf disusun dengan tepat, kita bisa membacanya.',
-            'Contoh: b-u-k-u menjadi buku. k-u-c-i-n-g menjadi kucing. Yuk, susun huruf-huruf di sekitarmu menjadi kata yang bermakna!'
-          ],
-          funFact: 'Semakin sering berlatih menyusun kata, semakin cepat kamu membaca.',
-          question: {
-            q: 'Susunan huruf "a-p-e-l" menjadi kata ...',
-            options: ['pale', 'apel', 'leap', 'elap'],
-            answer: 1,
-            explanation: 'Huruf a-p-e-l disusun menjadi kata "apel".'
-          }
-        },
-        {
-          title: 'Membaca Kalimat',
+          title: 'Kata dan Suku Kata',
           icon: IMG + 'om-1F4DA.svg',
-          visual: 'Budi membaca buku.',
+          visual: 'a · pel',
+          kind: 'words',
           paragraphs: [
-            'Kalimat adalah kumpulan kata yang memiliki arti. Kalimat dimulai dengan huruf kapital dan diakhiri dengan tanda titik, tanda tanya, atau tanda seru.',
-            '"Budi membaca buku." adalah contoh kalimat sederhana. Kata pertama diawali huruf B kapital, lalu diakhiri tanda titik.'
+            'Kata bisa dipecah menjadi suku kata. Kata apel dibaca a-pel, terdiri dari dua suku kata.',
+            'Tekan gambar untuk mendengar kata dan suku katanya.'
           ],
-          funFact: 'Membaca kalimat dengan intonasi yang tepat membuat cerita lebih hidup.',
-          question: {
-            q: 'Huruf pertama dalam sebuah kalimat sebaiknya ...',
-            options: ['huruf kecil', 'huruf kapital', 'angka', 'simbol'],
-            answer: 1,
-            explanation: 'Kalimat dimulai dengan huruf kapital, misalnya "Aku suka membaca."'
-          }
+          funFact: 'Tepuk tangan satu kali untuk setiap suku kata. Kata "apel" mendapat dua tepukan.',
+          check: 'syllableSound'
         }
       ],
       summary: [
-        'Huruf vokal ada lima: a, i, u, e, o.',
-        'Suku kata adalah potongan bunyi dalam kata, seperti bu-ku.',
-        'Kata dibentuk dari huruf yang disusun dengan benar.',
-        'Kalimat dimulai dengan huruf kapital dan diakhiri tanda baca.'
-      ]
-    },
-    {
-      id: 'berhitung',
-      title: 'Berhitung Ceria',
-      subject: 'Matematika',
-      grade: 'Kelas 3–4',
-      color: 'yellow',
-      illustration: 'assets/images/illustration-berhitung.svg',
-      icon: IMG + 'om-1F9EA.svg',
-      blurb: 'Nilai tempat, penjumlahan, pengurangan, perkalian, dan pecahan sederhana.',
-      subbabs: [
-        {
-          title: 'Nilai Tempat Angka',
-          icon: IMG + 'om-1F9EA.svg',
-          visual: '245 = 200 + 40 + 5',
-          paragraphs: [
-            'Setiap angka memiliki nilai tempat. Pada bilangan 245, angka 2 menempati ratusan, angka 4 menempati puluhan, dan angka 5 menempati satuan.',
-            'Jadi, 245 sama dengan 200 + 40 + 5. Memahami nilai tempat membantu kita menjumlahkan dan mengurangkan bilangan dengan benar.'
-          ],
-          funFact: 'Nilai tempat selalu bergerak sepuluh kali lipat: 1 puluhan = 10 satuan.',
-          question: {
-            q: 'Pada bilangan 372, angka 7 menempati tempat ...',
-            options: ['satuan', 'puluhan', 'ratusan', 'ribuan'],
-            answer: 1,
-            explanation: 'Pada 372, angka 7 berada di tempat puluhan, sehingga nilainya 70.'
-          }
-        },
-        {
-          title: 'Penjumlahan & Pengurangan',
-          icon: IMG + 'om-1F3B2.svg',
-          visual: '125 + 40 = 165',
-          paragraphs: [
-            'Penjumlahan berarti menggabungkan dua bilangan atau lebih. Contoh: 125 + 40 = 165. Susun angka sesuai nilai tempat agar mudah dihitung.',
-            'Pengurangan berarti mengambil sebagian dari suatu bilangan. Contoh: 90 − 25 = 65. Periksa hasilmu dengan menambahkan kembali: 65 + 25 = 90.'
-          ],
-          funFact: 'Penjumlahan bersifat bolak-balik: 4 + 5 sama dengan 5 + 4.',
-          question: {
-            q: '48 + 25 = ...',
-            options: ['63', '72', '73', '83'],
-            answer: 2,
-            explanation: '48 + 25 = 73. Tambahkan satuan 8 + 5 = 13, simpan 1, lalu puluhan 4 + 2 + 1 = 7.'
-          }
-        },
-        {
-          title: 'Perkalian Seru',
-          icon: IMG + 'om-1F31F.svg',
-          visual: '3 × 4 = 4 + 4 + 4 = 12',
-          paragraphs: [
-            'Perkalian adalah penjumlahan berulang. Contoh: 3 × 4 berarti angka 4 dijumlahkan sebanyak 3 kali, yaitu 4 + 4 + 4 = 12.',
-            'Perkalian juga bisa dibayangkan sebagai baris dan kolom. Jika ada 3 baris dengan 4 bola di setiap baris, jumlah bolanya 12.'
-          ],
-          funFact: 'Perkalian bersifat bolak-balik: 3 × 4 = 4 × 3.',
-          question: {
-            q: '4 × 5 = ...',
-            options: ['9', '16', '20', '25'],
-            answer: 2,
-            explanation: '4 × 5 = 5 + 5 + 5 + 5 = 20.'
-          }
-        },
-        {
-          title: 'Pecahan Sederhana',
-          icon: IMG + 'om-1F34E.svg',
-          visual: '1/2 apel · 1/4 apel',
-          paragraphs: [
-            'Pecahan menunjukkan bagian dari sesuatu yang utuh. Jika sebuah apel dibagi dua sama besar, setiap bagian bernilai 1/2.',
-            'Angka di atas disebut pembilang, angka di bawah disebut penyebut. Jika apel dibagi empat sama besar, setiap bagian bernilai 1/4.'
-          ],
-          funFact: 'Dua potong 1/4 jika digabung menjadi 2/4, yang sama nilainya dengan 1/2.',
-          question: {
-            q: 'Satu kue dibagi 4 bagian sama besar. Setiap bagian bernilai ...',
-            options: ['1/2', '1/3', '1/4', '1/5'],
-            answer: 2,
-            explanation: 'Satu bagian dari empat bagian sama besar ditulis 1/4.'
-          }
-        }
-      ],
-      summary: [
-        'Nilai tempat: satuan, puluhan, ratusan.',
-        'Penjumlahan menggabungkan, pengurangan mengambil sebagian.',
-        'Perkalian adalah penjumlahan berulang.',
-        'Pecahan menunjukkan bagian dari sesuatu yang utuh, seperti 1/2 dan 1/4.'
-      ]
-    },
-    {
-      id: 'tumbuhan',
-      title: 'Dunia Tumbuhan',
-      subject: 'IPA',
-      grade: 'Kelas 4–6',
-      color: 'green',
-      illustration: 'assets/images/illustration-tumbuhan.svg',
-      icon: IMG + 'om-1F331.svg',
-      blurb: 'Bagian tumbuhan, fotosintesis, jenis tumbuhan, dan cara menjaganya.',
-      subbabs: [
-        {
-          title: 'Bagian-Bagian Tumbuhan',
-          icon: IMG + 'om-1F331.svg',
-          visual: 'akar · batang · daun · bunga',
-          paragraphs: [
-            'Tumbuhan memiliki akar, batang, daun, bunga, buah, dan biji. Akar menyerap air dan zat hara dari tanah. Batang menyalurkan air ke seluruh bagian tumbuhan.',
-            'Daun tempat tumbuhan membuat makanan. Bunga membantu tumbuhan berkembang biak, sedangkan buah dan biji menjadi calon tumbuhan baru.'
-          ],
-          funFact: 'Akar juga membantu tumbuhan tetap berdiri kokoh di dalam tanah.',
-          question: {
-            q: 'Bagian tumbuhan yang menyerap air dari tanah adalah ...',
-            options: ['akar', 'batang', 'daun', 'bunga'],
-            answer: 0,
-            explanation: 'Akar berfungsi menyerap air dan zat hara dari dalam tanah.'
-          }
-        },
-        {
-          title: 'Fotosintesis Itu Apa?',
-          icon: IMG + 'om-1F343.svg',
-          visual: 'air + cahaya + CO₂ → makanan + O₂',
-          paragraphs: [
-            'Fotosintesis adalah proses tumbuhan membuat makanan sendiri. Proses ini terjadi di daun dengan bantuan cahaya matahari.',
-            'Tumbuhan mengambil air dari tanah dan karbondioksida dari udara. Dengan cahaya matahari, tumbuhan menghasilkan makanan dan oksigen. Oksigen inilah yang kita hirup.',
-          ],
-          funFact: 'Klorofil adalah zat hijau daun yang membantu menangkap cahaya matahari.',
-          question: {
-            q: 'Gas yang dihasilkan tumbuhan saat fotosintesis adalah ...',
-            options: ['karbondioksida', 'oksigen', 'nitrogen', 'hidrogen'],
-            answer: 1,
-            explanation: 'Fotosintesis menghasilkan oksigen yang dibutuhkan makhluk hidup.'
-          }
-        },
-        {
-          title: 'Jenis-Jenis Tumbuhan',
-          icon: IMG + 'om-1F33B.svg',
-          visual: 'pohon · semak · merambat',
-          paragraphs: [
-            'Tumbuhan di sekitar kita bermacam-macam. Ada pohon berbatang keras dan tinggi, ada semak yang pendek dan berbatang lunak.',
-            'Ada juga tumbuhan merambat seperti kacang panjang, serta tumbuhan air seperti eceng gondok. Setiap jenis tumbuhan punya tempat hidup yang sesuai.'
-          ],
-          funFact: 'Eceng gondok memiliki gelembung kecil di tangkainya agar dapat mengapung di air.',
-          question: {
-            q: 'Tumbuhan yang hidup di air adalah ...',
-            options: ['eceng gondok', 'mangga', 'mawar', 'jagung'],
-            answer: 0,
-            explanation: 'Eceng gondok hidup mengapung di air, misalnya di kolam atau danau.'
-          }
-        },
-        {
-          title: 'Menjaga Tumbuhan',
-          icon: IMG + 'om-1F4A7.svg',
-          visual: 'siram · rawat · lestarikan',
-          paragraphs: [
-            'Tumbuhan memberi kita oksigen, makanan, dan tempat tinggal bagi hewan. Kita harus menjaga tumbuhan agar lingkungan tetap sehat.',
-            'Cara menjaganya: menyiram tanaman, memberi cahaya matahari yang cukup, tidak memetik sembarangan, dan menanam pohon baru.'
-          ],
-          funFact: 'Menanam satu pohon membantu bumi menyerap lebih banyak air hujan.',
-          question: {
-            q: 'Cara menjaga tumbuhan adalah ...',
-            options: ['mencabut semua daunnya', 'menyiram secara teratur', 'menutup dengan plastik', 'memetik bunganya setiap hari'],
-            answer: 1,
-            explanation: 'Menyiram tanaman secara teratur membantu tumbuhan tumbuh sehat.'
-          }
-        }
-      ],
-      summary: [
-        'Tumbuhan memiliki akar, batang, daun, bunga, buah, dan biji.',
-        'Fotosintesis membuat makanan dengan bantuan cahaya matahari.',
-        'Tumbuhan memiliki jenis dan tempat hidup yang berbeda-beda.',
-        'Kita perlu menyiram, merawat, dan menanam pohon untuk menjaga tumbuhan.'
+        'Huruf vokal ada lima: A, I, U, E, O.',
+        'Suku kata dibuat dari konsonan dan vokal, contohnya ba, bi, bu, be, bo.',
+        'Kata dapat dipecah menjadi suku kata, contohnya a-pel dan i-kan.',
+        'Mengucapkan suku kata pelan-pelan membantu kita membaca kata.'
       ]
     }
   ];
 
   /* ============================================================
-     C. DATA GAME
+     C. GAME — peta petualangan dengan tiga pos (PDF halaman 5)
      ============================================================ */
-  const matchSets = [
-    ['apel', 'kucing', 'sepeda', 'bulan', 'kupukupu'],
-    ['buku', 'gajah', 'roket', 'pisang', 'jam'],
-    ['ikan', 'matahari', 'pensil', 'mobil', 'bola']
-  ];
-
-  const quickQuestions = [
-    { q: 'Berapa hasil 7 + 8?', options: ['13', '14', '15', '16'], answer: 2, explanation: '7 + 8 = 15.' },
-    { q: 'Hewan yang menghasilkan madu adalah ...', options: ['lebah', 'kucing', 'ikan', 'gajah'], answer: 0, explanation: 'Lebah menghasilkan madu dari nektar bunga.' },
-    { q: 'Planet tempat kita tinggal adalah ...', options: ['Mars', 'Bumi', 'Venus', 'Jupiter'], answer: 1, explanation: 'Kita tinggal di planet Bumi.' },
-    { q: '12 − 5 = ...', options: ['6', '7', '8', '9'], answer: 1, explanation: '12 − 5 = 7.' },
-    { q: 'Huruf vokal ada ...', options: ['3', '4', '5', '6'], answer: 2, explanation: 'Huruf vokal ada lima: a, i, u, e, o.' },
-    { q: 'Bagian tumbuhan yang menyerap air adalah ...', options: ['daun', 'akar', 'bunga', 'buah'], answer: 1, explanation: 'Akar menyerap air dari dalam tanah.' },
-    { q: '3 × 6 = ...', options: ['12', '15', '18', '21'], answer: 2, explanation: '3 × 6 = 18.' },
-    { q: 'Air jika membeku berubah menjadi ...', options: ['es', 'uap', 'angin', 'awan'], answer: 0, explanation: 'Air yang membeku berubah menjadi es.' },
-    { q: 'Warna daun pada umumnya adalah ...', options: ['biru', 'merah', 'hijau', 'hitam'], answer: 2, explanation: 'Daun berwarna hijau karena memiliki klorofil.' },
-    { q: 'Lagu Indonesia Raya diciptakan oleh ...', options: ['W.R. Supratman', 'Ismail Marzuki', 'Ibu Sud', 'C. Simanjuntak'], answer: 0, explanation: 'Indonesia Raya diciptakan oleh W.R. Supratman.' },
-    { q: '1 jam sama dengan ... menit', options: ['30', '45', '60', '100'], answer: 2, explanation: 'Satu jam sama dengan 60 menit.' },
-    { q: 'Alat untuk mengukur suhu adalah ...', options: ['termometer', 'penggaris', 'timbangan', 'jam'], answer: 0, explanation: 'Suhu diukur dengan termometer.' },
-    { q: 'Huruf setelah K adalah ...', options: ['J', 'L', 'M', 'N'], answer: 1, explanation: 'Urutan huruf: J, K, L, M. Jadi setelah K adalah L.' },
-    { q: '100 − 40 = ...', options: ['50', '60', '70', '80'], answer: 1, explanation: '100 − 40 = 60.' },
-    { q: 'Benda langit yang bersinar di siang hari adalah ...', options: ['bulan', 'bintang', 'matahari', 'awan'], answer: 2, explanation: 'Matahari bersinar terang pada siang hari.' },
-    { q: '2/4 senilai dengan ...', options: ['1/2', '1/3', '1/4', '2/3'], answer: 0, explanation: '2/4 dapat disederhanakan menjadi 1/2.' },
-    { q: 'Proses tumbuhan membuat makanan disebut ...', options: ['fotosintesis', 'pernapasan', 'penguapan', 'pencernaan'], answer: 0, explanation: 'Tumbuhan membuat makanan melalui fotosintesis.' },
-    { q: 'Jumlah kaki serangga adalah ...', options: ['4', '6', '8', '10'], answer: 1, explanation: 'Serangga memiliki enam kaki.' },
-    { q: 'Bulan ke-8 dalam satu tahun adalah ...', options: ['Juli', 'Agustus', 'September', 'Oktober'], answer: 1, explanation: 'Bulan ke-8 adalah Agustus.' },
-    { q: 'Hewan yang bernapas dengan insang adalah ...', options: ['ayam', 'ikan', 'sapi', 'kucing'], answer: 1, explanation: 'Ikan bernapas dengan insang.' }
-  ];
-
-  const trueFalse = [
-    { statement: 'Matahari terbit pada pagi hari.', answer: true, explanation: 'Matahari terbit di pagi hari di bagian timur langit.' },
-    { statement: 'Air membeku saat dipanaskan.', answer: false, explanation: 'Air membeku saat didinginkan, bukan dipanaskan.' },
-    { statement: 'Tumbuhan membutuhkan cahaya matahari untuk membuat makanan.', answer: true, explanation: 'Cahaya matahari membantu proses fotosintesis.' },
-    { statement: '5 + 5 = 12.', answer: false, explanation: '5 + 5 = 10, bukan 12.' },
-    { statement: 'Kucing adalah hewan mamalia.', answer: true, explanation: 'Kucing menyusui anaknya, jadi termasuk mamalia.' },
-    { statement: 'Huruf vokal ada tiga.', answer: false, explanation: 'Huruf vokal ada lima: a, i, u, e, o.' },
-    { statement: 'Kita harus membuang sampah di tempat sampah.', answer: true, explanation: 'Membuang sampah pada tempatnya menjaga lingkungan bersih.' },
-    { statement: 'Bumi berputar mengelilingi bulan.', answer: false, explanation: 'Bulan yang berputar mengelilingi Bumi.' },
-    { statement: 'Daun membantu tumbuhan membuat makanan.', answer: true, explanation: 'Fotosintesis terjadi di daun.' },
-    { statement: 'Satu minggu ada sepuluh hari.', answer: false, explanation: 'Satu minggu ada tujuh hari.' },
-    { statement: 'Membaca dapat menambah pengetahuan.', answer: true, explanation: 'Dengan membaca kita mendapatkan banyak informasi baru.' },
-    { statement: 'Ikan bernapas dengan paru-paru.', answer: false, explanation: 'Ikan bernapas dengan insang.' }
+  const adventure = [
+    {
+      id: 'pos1',
+      number: 1,
+      category: 'huruf',
+      title: 'Gerbang Rahasia Huruf',
+      short: 'Gerbang Rahasia Huruf',
+      goal: 'Mengenalkan huruf alfabet.',
+      color: 'blue',
+      icon: IMG + 'om-1F3C1.svg',
+      speech: 'Selamat datang di Pos Satu, Gerbang Rahasia Huruf! Dengarkan, lihat, dan pilih huruf yang benar untuk membuka gerbang.',
+      instructions: [
+        'Tebak huruf berdasarkan suara.',
+        'Tebak huruf berdasarkan gambar.',
+        'Lengkapi urutan alfabet.',
+        'Pilih huruf yang benar. Tiap jawaban benar bernilai 10 poin.'
+      ],
+      rounds: ['sound', 'picture', 'sequence', 'capital', 'sound', 'picture', 'sequence', 'capital']
+    },
+    {
+      id: 'pos2',
+      number: 2,
+      category: 'cocok',
+      title: 'Jembatan Huruf',
+      short: 'Jembatan Huruf',
+      goal: 'Mencocokkan huruf kapital dan huruf kecil.',
+      color: 'green',
+      icon: IMG + 'om-1F3AF.svg',
+      speech: 'Selamat datang di Pos Dua, Jembatan Huruf! Pasangkan huruf kapital dengan huruf kecil yang sama untuk menyeberangi jembatan.',
+      instructions: [
+        'Cocokkan A dengan a, B dengan b, dan seterusnya.',
+        'Ada papan berisi pasangan huruf yang diacak.',
+        'Tekan huruf kapital, lalu huruf kecilnya, atau seret hurufnya.',
+        'Tiap pasangan benar bernilai 10 poin.'
+      ],
+      boards: [
+        { fixed: ['A', 'B', 'C', 'D'] },
+        { random: 4 },
+        { random: 5 }
+      ]
+    },
+    {
+      id: 'pos3',
+      number: 3,
+      category: 'suku',
+      title: 'Harta Karun Kata',
+      short: 'Harta Karun Kata',
+      goal: 'Memperkuat pengenalan huruf dan suku kata.',
+      color: 'orange',
+      icon: IMG + 'om-1F3C6.svg',
+      speech: 'Selamat datang di Pos Tiga, Harta Karun Kata! Kenali huruf vokal, susun huruf, dan dengarkan suku kata untuk membuka peti harta.',
+      instructions: [
+        'Kenali huruf vokal.',
+        'Susun huruf-huruf menjadi kata sederhana.',
+        'Kenali gabungan suku kata.',
+        'Pilih jawaban berdasarkan suara yang kamu dengar.'
+      ],
+      rounds: ['vowel', 'syllable', 'build', 'syllableSound', 'vowel', 'syllable', 'build', 'syllableSound']
+    }
   ];
 
   /* ============================================================
-     D. EVALUASI — 3 paket, masing-masing 10 soal
+     D. EVALUASI (PDF halaman 6)
+     plan = jenis soal; setiap jenis muncul dua kali (10 soal).
      ============================================================ */
   const evaluations = [
     {
-      id: 'kelas12',
-      title: 'Petualangan Awal',
-      grade: 'Kelas 1–2',
+      id: 'huruf',
+      title: 'Evaluasi Mengenal Huruf',
       color: 'blue',
-      description: 'Membaca, berhitung dasar, dan mengenal alam sekitar.',
-      questions: [
-        {
-          q: 'Mana yang termasuk huruf vokal?',
-          options: ['b', 'k', 'a', 'm'],
-          answer: 2,
-          explanation: 'a adalah huruf vokal. Huruf vokal lainnya adalah i, u, e, dan o.'
-        },
-        {
-          q: '4 + 3 = ...',
-          options: ['5', '6', '7', '8'],
-          answer: 2,
-          explanation: '4 + 3 = 7.'
-        },
-        {
-          q: '10 − 4 = ...',
-          options: ['4', '5', '6', '7'],
-          answer: 2,
-          explanation: '10 − 4 = 6.'
-        },
-        {
-          q: 'Hewan yang dapat terbang adalah ...',
-          options: ['burung', 'kucing', 'sapi', 'ikan'], answer: 0,
-          explanation: 'Burung memiliki sayap sehingga dapat terbang.'
-        },
-        {
-          q: 'Bagian tumbuhan yang berwarna hijau dan lebar adalah ...',
-          options: ['akar', 'daun', 'batang', 'biji'], answer: 1,
-          explanation: 'Daun umumnya berwarna hijau dan menjadi tempat fotosintesis.'
-        },
-        {
-          q: 'Kata "ibu" terdiri dari berapa suku kata?',
-          options: ['1', '2', '3', '4'], answer: 1,
-          explanation: 'I-bu terdiri dari dua suku kata.'
-        },
-        {
-          q: 'Angka setelah 19 adalah ...',
-          options: ['18', '20', '21', '29'], answer: 1,
-          explanation: 'Setelah 19 adalah 20.'
-        },
-        {
-          q: 'Benda yang digunakan untuk menulis adalah ...',
-          options: ['pensil', 'bola', 'sepatu', 'gelas'], answer: 0,
-          explanation: 'Pensil digunakan untuk menulis.'
-        },
-        {
-          q: '5 + 5 + 5 = ...',
-          options: ['10', '12', '15', '20'], answer: 2,
-          explanation: '5 + 5 + 5 = 15.'
-        },
-        {
-          q: 'Sebelum makan, sebaiknya kita ...',
-          options: ['mencuci tangan', 'berlari', 'menonton', 'tidur'], answer: 0,
-          explanation: 'Mencuci tangan menjaga kita dari kuman.'
-        }
-      ]
-    },
-    {
-      id: 'kelas34',
-      title: 'Penjelajah Ilmu',
-      grade: 'Kelas 3–4',
-      color: 'yellow',
-      description: 'Operasi hitung, pecahan, tumbuhan, dan pengetahuan umum.',
-      questions: [
-        {
-          q: '125 + 40 = ...',
-          options: ['155', '160', '165', '170'], answer: 2,
-          explanation: '125 + 40 = 165.'
-        },
-        {
-          q: '9 × 4 = ...',
-          options: ['32', '34', '36', '38'], answer: 2,
-          explanation: '9 × 4 = 36.'
-        },
-        {
-          q: '1/2 + 1/2 = ...',
-          options: ['1/2', '1', '2', '1/4'], answer: 1,
-          explanation: 'Dua bagian setengah jika digabung menjadi satu bagian utuh.'
-        },
-        {
-          q: 'Proses tumbuhan membuat makanan disebut ...',
-          options: ['fotosintesis', 'penguapan', 'pernapasan', 'pembusukan'], answer: 0,
-          explanation: 'Fotosintesis terjadi di daun dengan bantuan cahaya matahari.'
-        },
-        {
-          q: 'Alat indra untuk melihat adalah ...',
-          options: ['telinga', 'hidung', 'mata', 'kulit'], answer: 2,
-          explanation: 'Mata adalah alat indra penglihatan.'
-        },
-        {
-          q: '72 − 18 = ...',
-          options: ['44', '54', '56', '64'], answer: 1,
-          explanation: '72 − 18 = 54.'
-        },
-        {
-          q: 'Ibu kota Provinsi Jawa Timur adalah ...',
-          options: ['Bandung', 'Surabaya', 'Semarang', 'Malang'], answer: 1,
-          explanation: 'Ibu kota Jawa Timur adalah Surabaya.'
-        },
-        {
-          q: 'Penulisan kalimat yang benar adalah ...',
-          options: ['budi pergi ke sekolah.', 'Budi pergi ke sekolah.', 'Budi Pergi ke Sekolah.', 'budi Pergi ke sekolah.'],
-          answer: 1,
-          explanation: 'Kalimat diawali huruf kapital dan diakhiri tanda titik.'
-        },
-        {
-          q: '2 jam = ... menit',
-          options: ['60', '90', '100', '120'], answer: 3,
-          explanation: '1 jam = 60 menit, jadi 2 jam = 120 menit.'
-        },
-        {
-          q: 'Bagian tumbuhan yang menyalurkan air dari akar ke daun adalah ...',
-          options: ['batang', 'bunga', 'buah', 'biji'], answer: 0,
-          explanation: 'Batang menyalurkan air dan zat hara ke seluruh bagian tumbuhan.'
-        }
-      ]
-    },
-    {
-      id: 'kelas56',
-      title: 'Bintang Kelas',
-      grade: 'Kelas 5–6',
-      color: 'green',
-      description: 'Perkalian, pecahan, IPA, IPS, dan pengetahuan umum.',
-      questions: [
-        {
-          q: '15 × 12 = ...',
-          options: ['150', '160', '170', '180'], answer: 3,
-          explanation: '15 × 12 = 180.'
-        },
-        {
-          q: '2/5 + 1/5 = ...',
-          options: ['3/5', '3/10', '2/10', '1/5'], answer: 0,
-          explanation: 'Penyebut sama, jadi jumlahkan pembilangnya: 2 + 1 = 3, hasilnya 3/5.'
-        },
-        {
-          q: 'Organ pernapasan manusia adalah ...',
-          options: ['jantung', 'paru-paru', 'lambung', 'ginjal'], answer: 1,
-          explanation: 'Manusia bernapas menggunakan paru-paru.'
-        },
-        {
-          q: 'Gas yang dihasilkan tumbuhan saat fotosintesis adalah ...',
-          options: ['oksigen', 'karbondioksida', 'nitrogen', 'helium'], answer: 0,
-          explanation: 'Fotosintesis menghasilkan oksigen.'
-        },
-        {
-          q: '3,5 + 1,25 = ...',
-          options: ['4,25', '4,5', '4,75', '5,25'], answer: 2,
-          explanation: '3,50 + 1,25 = 4,75.'
-        },
-        {
-          q: 'Planet yang paling dekat dengan Matahari adalah ...',
-          options: ['Venus', 'Bumi', 'Merkurius', 'Mars'], answer: 2,
-          explanation: 'Merkurius adalah planet terdekat dengan Matahari.'
-        },
-        {
-          q: '25% dari 200 adalah ...',
-          options: ['25', '40', '50', '75'], answer: 2,
-          explanation: '25% sama dengan 1/4, sehingga 1/4 × 200 = 50.'
-        },
-        {
-          q: 'Proklamasi Kemerdekaan Indonesia dibacakan pada ...',
-          options: ['17 Agustus 1945', '17 Agustus 1949', '1 Juni 1945', '28 Oktober 1928'], answer: 0,
-          explanation: 'Proklamasi dibacakan pada 17 Agustus 1945.'
-        },
-        {
-          q: 'Sumber energi terbarukan adalah ...',
-          options: ['batu bara', 'minyak bumi', 'matahari', 'gas alam'], answer: 2,
-          explanation: 'Energi matahari selalu tersedia dan termasuk energi terbarukan.'
-        },
-        {
-          q: 'Penulisan kalimat dengan ejaan yang benar adalah ...',
-          options: ['ayah membeli buku di toko.', 'Ayah membeli buku di toko.', 'Ayah Membeli Buku Di Toko.', 'ayah Membeli buku di Toko.'],
-          answer: 1,
-          explanation: 'Huruf kapital dipakai di awal kalimat dan nama orang.'
-        }
+      description: 'Sepuluh soal interaktif: menebak huruf dari suara, mengenali huruf kapital, mencocokkan huruf kecil, melengkapi urutan alfabet, dan mengenali huruf vokal.',
+      plan: [
+        'sequence', 'lower', 'sound', 'capital', 'vowel',
+        'sequence', 'lower', 'sound', 'capital', 'vowel'
+      ],
+      variations: [
+        { icon: 'volume', label: 'Menebak huruf dari suara' },
+        { icon: 'target', label: 'Mengidentifikasi huruf kapital' },
+        { icon: 'book', label: 'Mencocokkan huruf kecil' },
+        { icon: 'clipboard', label: 'Melengkapi urutan alfabet' },
+        { icon: 'sparkles', label: 'Mengenali huruf vokal' }
       ]
     }
   ];
@@ -587,16 +473,16 @@ FLA.data = (function () {
     { id: 'first-step', name: 'Langkah Pertama', desc: 'Selesaikan satu aktivitas belajar.', icon: IMG + 'om-2705.svg' },
     { id: 'first-star', name: 'Bintang Pertama', desc: 'Kumpulkan bintang pertamamu.', icon: IMG + 'om-1F31F.svg' },
     { id: 'star-10', name: 'Kolektor Bintang', desc: 'Kumpulkan 10 bintang.', icon: IMG + 'om-1F3C6.svg' },
-    { id: 'video-2', name: 'Penonton Rajin', desc: 'Selesaikan 2 video pembelajaran.', icon: IMG + 'om-1F3AC.svg' },
-    { id: 'materi-1', name: 'Pembaca Hebat', desc: 'Selesaikan satu topik materi.', icon: IMG + 'om-1F4DA.svg' },
-    { id: 'game-3', name: 'Jagoan Game', desc: 'Mainkan 3 permainan berbeda.', icon: IMG + 'om-1F3AE.svg' },
+    { id: 'video-1', name: 'Penonton Rajin', desc: 'Selesaikan video pengenalan huruf.', icon: IMG + 'om-1F3AC.svg' },
+    { id: 'materi-1', name: 'Pembaca Hebat', desc: 'Selesaikan satu materi.', icon: IMG + 'om-1F4DA.svg' },
+    { id: 'pos-3', name: 'Penjelajah Peta', desc: 'Buka dan selesaikan ketiga pos petualangan.', icon: IMG + 'om-1F3AE.svg' },
     { id: 'perfect', name: 'Nilai Sempurna', desc: 'Dapatkan nilai 100 pada evaluasi.', icon: IMG + 'om-1F3C5.svg' },
     { id: 'point-300', name: 'Bintang Kelas', desc: 'Kumpulkan 300 poin belajar.', icon: IMG + 'om-1F393.svg' }
   ];
 
   /* Label predikat berdasarkan nilai evaluasi */
   const predicates = [
-    { min: 90, label: 'Bintang Emas', tone: 'gold', message: 'Luar biasa! Kamu menguasai materi dengan sangat baik.' },
+    { min: 90, label: 'Bintang Emas', tone: 'gold', message: 'Luar biasa! Kamu mengenal huruf dengan sangat baik.' },
     { min: 75, label: 'Bintang Perak', tone: 'silver', message: 'Hebat! Sedikit lagi menuju nilai sempurna.' },
     { min: 60, label: 'Bintang Perunggu', tone: 'bronze', message: 'Bagus! Terus berlatih agar semakin mahir.' },
     { min: 0, label: 'Ayo Coba Lagi', tone: 'sky', message: 'Jangan menyerah! Baca materi lalu coba lagi, ya.' }
@@ -606,22 +492,38 @@ FLA.data = (function () {
     site: {
       name: 'Fun Learning Adventure',
       shortName: 'FLA',
+      theme: 'Mengenal Huruf',
       mascot: 'Huhu',
       mascotImage: IMG + 'mascot-huhu.svg',
       logo: IMG + 'logo.svg',
+      kidsImage: IMG + 'kids-huruf.svg',
+      /* Ubah menjadi true jika berkas suara sudah diletakkan di
+         assets/audio/huruf/ (lihat README). Jika berkas tidak ada,
+         aplikasi otomatis memakai suara bawaan browser (Web Speech API). */
+      audioFiles: false,
+      audioFolder: 'assets/audio/huruf/',
+      welcomeSpeech: 'Selamat datang! Mengenal huruf. Ayo belajar huruf langkah demi langkah!',
       welcome: [
-        'Halo, teman! Siap belajar hari ini?',
-        'Aku Huhu, teman belajarmu. Klik aku lagi, ya!',
+        'Halo, teman! Siap mengenal huruf hari ini?',
+        'Aku Huhu. Ayo kita belajar huruf dari A sampai Z!',
         'Belajar sedikit setiap hari membuat kita hebat.',
         'Jangan lupa istirahat dan minum air setelah belajar.'
       ]
     },
-    items,
+    IMG,
+    letters,
+    ALPHABET,
+    LETTER_NAMES,
+    VOWELS,
+    CONSONANTS,
+    SYLLABLE_CONSONANTS,
+    LOOKALIKE,
+    pictures,
+    vowelWords,
+    categories,
     videos,
     materials,
-    matchSets,
-    quickQuestions,
-    trueFalse,
+    adventure,
     evaluations,
     badges,
     predicates

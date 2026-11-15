@@ -216,23 +216,30 @@ FLA.ui = (function () {
     const ox = origin ? origin.x : window.innerWidth / 2;
     const oy = origin ? origin.y : window.innerHeight * 0.35;
 
+    const letters = 'AEIOUBCDFGHJKLMNPQRSTVWXYZ';
     for (let i = 0; i < total; i += 1) {
       const piece = document.createElement('span');
-      piece.className = 'confetti-piece';
+      const isLetter = i % 4 === 0;
+      piece.className = 'confetti-piece' + (isLetter ? ' confetti-piece--letter' : '');
       const angle = Math.random() * Math.PI * 2;
       const distance = 90 + Math.random() * 320;
       const x = Math.cos(angle) * distance;
       const y = Math.sin(angle) * distance - 60;
       piece.style.left = ox + 'px';
       piece.style.top = oy + 'px';
-      piece.style.background = colors[i % colors.length];
-      piece.style.width = (7 + Math.random() * 8) + 'px';
-      piece.style.height = (9 + Math.random() * 10) + 'px';
       piece.style.setProperty('--dx', x + 'px');
       piece.style.setProperty('--dy', y + 'px');
       piece.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
       piece.style.animationDelay = (Math.random() * 0.18) + 's';
-      if (i % 3 === 0) piece.style.borderRadius = '50%';
+      if (isLetter) {
+        piece.textContent = letters[Math.floor(Math.random() * letters.length)];
+        piece.style.color = colors[i % colors.length];
+      } else {
+        piece.style.background = colors[i % colors.length];
+        piece.style.width = (7 + Math.random() * 8) + 'px';
+        piece.style.height = (9 + Math.random() * 10) + 'px';
+        if (i % 3 === 0) piece.style.borderRadius = '50%';
+      }
       root.appendChild(piece);
       setTimeout(() => piece.remove(), 2200);
     }

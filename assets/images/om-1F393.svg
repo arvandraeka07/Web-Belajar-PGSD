@@ -1,15 +1,1 @@
-<svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-  <g id="color">
-    <polyline fill="#3f3f3f" stroke="#3f3f3f" stroke-miterlimit="10" stroke-width="2" points="56 27.9166 56 45.896 16 45.896 16 27.9166"/>
-    <line x1="10.0432" x2="10.0432" y1="28.5" y2="36.9063" fill="none" stroke="#f1b31c" stroke-miterlimit="10" stroke-width="2"/>
-    <circle cx="10.0432" cy="36.9063" r="2" fill="#f1b31c"/>
-    <polygon fill="#f1b31c" stroke="#f1b31c" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.747" points="12.0432 45.896 8.25 45.896 10.1466 37.7763 10.1466 37.7763 12.0432 45.896"/>
-    <rect x="4" y="22.875" width="64" height="5.0417" fill="#3f3f3f"/>
-    <polyline fill="#3f3f3f" points="56 30.9166 56 45.896 16 45.896 16 30.9166"/>
-  </g>
-  <g id="line">
-    <circle cx="36" cy="22.0023" r="3"/>
-    <rect x="4" y="22.875" width="64" height="5.0417" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-    <polyline fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.747" points="56 30.9166 56 45.896 16 45.896 16 30.9166"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72"><defs><linearGradient id="g-purple" x1="0.2" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#8f84e6"/><stop offset="0.55" stop-color="#5547b8"/><stop offset="1" stop-color="#463b9f"/></linearGradient><linearGradient id="g-yellow" x1="0.2" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="#ffe98a"/><stop offset="0.55" stop-color="#ffd23f"/><stop offset="1" stop-color="#f2c029"/></linearGradient></defs><path d="M18 38V52C18 60 54 60 54 52V38L36 47z" fill="url(#g-purple)" stroke="#2b2470" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" /><path d="M36 14L68 30L36 46L4 30z" fill="url(#g-purple)" stroke="#2b2470" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" /><path d="M36 22L55 31L36 40L17 31z" fill="#fff" opacity=".18"/><path d="M62 33V50" stroke="#d99f00" stroke-width="3" stroke-linecap="round"/><circle cx="62" cy="53" r="4" fill="url(#g-yellow)" stroke="#d99f00" stroke-width="2.4" /><circle cx="36" cy="30" r="2.6" fill="url(#g-yellow)" stroke="#d99f00" stroke-width="1.6" /></svg>
